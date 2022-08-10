@@ -9,14 +9,62 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+Create Function to download data from google drive
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r Make Functions}
+## Create a function to read in data
+read_data <- function(data){
+  # read in data
+  read_csv(file = data) %>%
+  mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
+  mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
+  mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland")) %>%
+  mutate(transect_location = stringr::str_replace(transect_location,"sediment","Sediment")) %>%  
+}
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```
+## Get Data from GDrive
 
-```{r cars}
-summary(cars)
+We need to import data from Google Drive folder.
+The list is:
+1. TC/TN
+2. Bulk Density 
+3. GWC
+4. LOI
+5. pH (soil)
+
+
+```{r get data}
+
+require(pacman)
+pacman::p_load(tidyverse, # keep things tidy
+               janitor, # useful for simplifying column names
+               googlesheets4, # read_sheet 
+               googledrive,# drive_ functions
+               readr,# read in file types
+               readxl) # read in excel files
+
+## Set GDrive URL raw data files
+directory = "https://drive.google.com/drive/u/1/folders/1r3sP7tvhG2btZACvxZUdtrtSiLVGUUGp"
+
+## Create a list of files to download
+files <- drive_ls(directory) %>% 
+  filter(grepl("_Soil_", name))
+
+## Download files to local (don't worry, we'll delete em in a sec)
+lapply(files$name, drive_download, overwrite = TRUE)
+
+## Read in datasets
+soils_data_all <- files$name %>% 
+  map(read_data) %>% 
+  reduce(full_join, by= c("campaign", "kit_id", "transect_location")) %>%
+  bind_cols()
+
+## Clean up local (delete downloaded files)
+file.remove(c(files$name))
+
+# Save as rds
+saveRDS(soils_data_all, "./soils_data_merged.rds")
 ```
 
 ## Including Plots
