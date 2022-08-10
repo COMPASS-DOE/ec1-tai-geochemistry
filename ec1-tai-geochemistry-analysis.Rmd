@@ -9,70 +9,76 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Create Function to download data from google drive
-
-```{r Make Functions}
-## Create a function to read in data
-read_data <- function(data){
-  # read in data
-  read_csv(file = data) %>%
-  mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
-  mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
-  mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland")) %>%
-  mutate(transect_location = stringr::str_replace(transect_location,"sediment","Sediment")) %>%  
-}
-
-```
-## Get Data from GDrive
-
-We need to import data from Google Drive folder.
-The list is:
-1. TC/TN
-2. Bulk Density 
-3. GWC
-4. LOI
-5. pH (soil)
-
-
-```{r get data}
-
-require(pacman)
-pacman::p_load(tidyverse, # keep things tidy
-               janitor, # useful for simplifying column names
-               googlesheets4, # read_sheet 
-               googledrive,# drive_ functions
-               readr,# read in file types
-               readxl) # read in excel files
-
-## Set GDrive URL raw data files
-directory = "https://drive.google.com/drive/u/1/folders/1r3sP7tvhG2btZACvxZUdtrtSiLVGUUGp"
-
-## Create a list of files to download
-files <- drive_ls(directory) %>% 
-  filter(grepl("_Soil_", name))
-
-## Download files to local (don't worry, we'll delete em in a sec)
-lapply(files$name, drive_download, overwrite = TRUE)
-
-## Read in datasets
-soils_data_all <- files$name %>% 
-  map(read_data) %>% 
-  reduce(full_join, by= c("campaign", "kit_id", "transect_location")) %>%
-  bind_cols()
-
-## Clean up local (delete downloaded files)
-file.remove(c(files$name))
-
-# Save as rds
-saveRDS(soils_data_all, "./soils_data_merged.rds")
+##Load in Data
+```{r Load Data}
+library(tidyverse)
+soilparty = readRDS("./soils_data_merged.rds")
 ```
 
-## Including Plots
+##Complete Data
+Getting together only the samples that have a complete dataset 
+```{r data}
+completeset = soilparty %>%
+    select(!ends_with("_flag")) %>% na.omit()
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Clean Data for nmds 
+
+```{r clean for nmds }
+completeset$visible_minerals <- factor(completeset$visible_minerals, levels =c("None", "Mica", "Quartz"))
+completeset$visible_minerals <- as.integer(completeset$visible_minerals)
+
+completeset$visible_iron_oxidation <- factor(completeset$visible_iron_oxidation, levels =c("No", "Yes"))
+completeset$visible_iron_oxidation <- as.integer(completeset$visible_iron_oxidation)
+
+completeset$visible_white_flakes <- factor(completeset$visible_white_flakes, levels =c("No", "Yes"))
+completeset$visible_white_flakes <- as.integer(completeset$visible_white_flakes)
+
+soils4NMDS = completeset %>% unite(uniqueid, c(campaign,kit_id,transect_location)) %>% dplyr::select(!acidification) %>%
+dplyr::select(!date_run) %>%
+dplyr::select(!root_mass) %>%
+column_to_rownames(var="uniqueid")
+
+```
+
+This is a mess: 
+
+```{r Playing}
+library(vegan)
+
+soilspca = prcomp(soils4NMDS, retx = TRUE, center = TRUE, scale. = TRUE)
+biplot(soilspca)
+
+# soils_distmat <- 
+#   vegdist(soils4NMDS, method = "bray")
+# 
+# soils_distmat <- 
+#   as.matrix(soils_distmat, labels = T)
+# #write.csv(soils_distmat, "soils_distmat.csv")
+# 
+# Soils_NMDS <-
+#   metaMDS(soils_distmat,
+#           distance = "bray",
+#           k = 3,
+#           maxit = 999, 
+#           trymax = 500,
+#           wascores = TRUE)
+# # Run 20 stress 0.0334468 
+# # Procrustes: rmse 0.0009725123  max resid 0.002912856 
+# goodness(Soils_NMDS)
+# stressplot(Soils_NMDS)
+# 
+# #NMR_NMS_1 <-
+# #  metaMDS(NMR_distmat,
+# #          distance = "bray",
+# #          k = 3,
+# #          maxit = 999, 
+#  #         trymax = 500,
+#  #         wascores = TRUE)
+# #Run 20 stress 0.03344632 
+# # Procrustes: rmse 0.0002681262  max resid 0.001004477 
+# #goodness(NMR_NMS_1)
+# #stressplot(NMR_NMS_1)
+```
+
