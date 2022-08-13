@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
 Create Function to download data from google drive
@@ -46,6 +47,7 @@ pacman::p_load(tidyverse, # keep things tidy
 
 ## Set GDrive URL raw data files
 directory = "https://drive.google.com/drive/u/1/folders/1r3sP7tvhG2btZACvxZUdtrtSiLVGUUGp"
+KitMetadata = "https://drive.google.com/file/d/1eXPh-873xVYcREOAsbZu3pEgU4k9ykf-/view"
 
 ## Create a list of files to download
 files <- drive_ls(directory) %>% 
@@ -60,19 +62,17 @@ soils_data_all <- files$name %>%
   reduce(full_join, by= c("campaign", "kit_id", "transect_location")) %>%
   bind_cols()
 
+#Metadata 
+KitMD = googledrive::drive_download(KitMetadata, overwrite = TRUE)
+meta = read_csv(file = KitMD$name)
+
 ## Clean up local (delete downloaded files)
+file.remove(KitMD$name)
 file.remove(c(files$name))
+
+soils_data_all_wmeta <- full_join(soils_data_all, meta, by="kit_id")
 
 # Save as rds
 saveRDS(soils_data_all, "./soils_data_merged.rds")
+saveRDS(soils_data_all_wmeta, "./soils_data_merged_withmeta.rds")
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

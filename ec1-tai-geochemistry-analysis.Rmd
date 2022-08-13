@@ -10,14 +10,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ##Load in Data
-```{r Load Data}
+```{r Load Data, echo=FALSE, results='hide'}
 library(tidyverse)
-soilparty = readRDS("./soils_data_merged.rds")
+soilparty = readRDS("./soils_data_merged_withmeta.rds")
 ```
 
 ##Complete Data
 Getting together only the samples that have a complete dataset 
-```{r data}
+```{r data, echo=FALSE}
 completeset = soilparty %>%
     select(!ends_with("_flag")) %>% na.omit()
 
@@ -25,31 +25,63 @@ completeset = soilparty %>%
 
 ## Clean Data for nmds 
 
-```{r clean for nmds }
-completeset$visible_minerals <- factor(completeset$visible_minerals, levels =c("None", "Mica", "Quartz"))
-completeset$visible_minerals <- as.integer(completeset$visible_minerals)
+```{r clean for nmds, echo=FALSE}
 
-completeset$visible_iron_oxidation <- factor(completeset$visible_iron_oxidation, levels =c("No", "Yes"))
-completeset$visible_iron_oxidation <- as.integer(completeset$visible_iron_oxidation)
-
-completeset$visible_white_flakes <- factor(completeset$visible_white_flakes, levels =c("No", "Yes"))
-completeset$visible_white_flakes <- as.integer(completeset$visible_white_flakes)
-
-soils4NMDS = completeset %>% unite(uniqueid, c(campaign,kit_id,transect_location)) %>% dplyr::select(!acidification) %>%
+soils4NMDS = completeset %>% unite(uniqueid, c(campaign,kit_id,transect_location)) %>% dplyr::select(!acidification) %>% #I ca nt get this function to work as a list??
 dplyr::select(!date_run) %>%
 dplyr::select(!root_mass) %>%
+dplyr::select(!collection_date) %>%
+dplyr::select(!site_name) %>%
+dplyr::select(!state) %>%
+dplyr::select(!region) %>%
+dplyr::select(!samples_collected) %>%
+dplyr::select(!weather_conditions) %>%
+dplyr::select(!kit_notes) %>%
 column_to_rownames(var="uniqueid")
+
+soils4NMDS = soils4NMDS %>% mutate(air_temperature_c = stringr::str_replace(air_temperature_c, "-[0-9]{2}", ""))
+
+soils4NMDS$air_temperature_c = as.numeric(soils4NMDS$air_temperature_c)
+soils4NMDS$barometric_pressure_inhg= as.numeric(soils4NMDS$barometric_pressure_inhg)
+
+soils4NMDS$visible_minerals <- factor(soils4NMDS$visible_minerals, levels =c("None", "Mica", "Quartz"))
+soils4NMDS$visible_minerals <- as.integer(soils4NMDS$visible_minerals)
+
+soils4NMDS$visible_iron_oxidation <- factor(soils4NMDS$visible_iron_oxidation, levels =c("No", "Yes"))
+soils4NMDS$visible_iron_oxidation <- as.integer(soils4NMDS$visible_iron_oxidation)
+
+soils4NMDS$visible_white_flakes <- factor(soils4NMDS$visible_white_flakes, levels =c("No", "Yes"))
+soils4NMDS$visible_white_flakes <- as.integer(soils4NMDS$visible_white_flakes)
 
 ```
 
 This is a mess: 
 
-```{r Playing}
+```{r Playing, echo=FALSE}
 library(vegan)
 
 soilspca = prcomp(soils4NMDS, retx = TRUE, center = TRUE, scale. = TRUE)
 biplot(soilspca)
 
+library(dplyr)
+library(ggplot2)
+library(ggfortify)
+library("wesanderson")
+
+pal <- wes_palette("Darjeeling2",3, type = "discrete")
+
+graphy <-autoplot(soilspca, data = completeset, shape= 'region', colour= 'transect_location',
+  size=2,
+  loadings = TRUE, loadings.colour = 'black',
+  loadings.label = TRUE, loadings.label.size = 2)+
+  scale_colour_manual(values = pal) + 
+  cowplot::theme_cowplot()
+
+print(graphy)
+
+```
+
+```{r} 
 # soils_distmat <- 
 #   vegdist(soils4NMDS, method = "bray")
 # 
