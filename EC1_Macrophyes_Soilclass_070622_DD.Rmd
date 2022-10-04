@@ -1,0 +1,93 @@
+---
+title: "Exchange"
+author: "Donnie Day"
+date: "7/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#import
+```{r}
+df_cl<-read.csv("C:/Users/Donnie Day/Downloads/EC1_Metadata_CollectionLevel_070622_DD.csv")
+df_kl<-read.csv("C:/Users/Donnie Day/Downloads/EC1_Metadata_KitLevel_070622_DD.csv")
+```
+
+```{r}
+library(tidyverse)
+```
+##dataset_Collection Level 
+#Grouping of macrophytes and algae to macrophytes
+```{r}
+df_cl[, 'water_macrophytes_algae'] <- case_when(
+  df_cl[, 'water_macrophytes_algae'] == "None" ~ "None",
+  df_cl[, 'water_macrophytes_algae'] == "Algae" ~ "Algae",
+  df_cl[, 'water_macrophytes_algae'] == "Macrophytes" ~ "Macrophytes",
+  df_cl[, 'water_macrophytes_algae'] == "Macrophytes, Algae" ~ "Macrophytes",
+  df_cl[, 'water_macrophytes_algae'] == "NA" ~ "NA"
+)
+```
+
+#Numeric classification of none, algae, macrophytes, and NA
+```{r}
+df_cl[, 'water_macrophytes_algae_num'] <- case_when(
+  df_cl[, 'water_macrophytes_algae'] == "None" ~ 1,
+  df_cl[, 'water_macrophytes_algae'] == "Algae" ~ 2,
+  df_cl[, 'water_macrophytes_algae'] == "Macrophytes" ~ 3,
+  df_cl[, 'water_macrophytes_algae'] == "NA" ~ NaN
+)
+
+```
+
+
+#Numeric classification of H, O, A, and C horizons class wetland
+```{r}
+df_cl[, 'wt_Simple.Horizon.designation_num'] <- case_when(
+  df_cl[, 'wt_Simple.Horizon.designation'] == "H" ~ 1,
+  df_cl[, 'wt_Simple.Horizon.designation'] == "O" ~ 2,
+  df_cl[, 'wt_Simple.Horizon.designation'] == "A" ~ 3,
+  df_cl[, 'wt_Simple.Horizon.designation'] == "C" ~ 4,
+  df_cl[, 'wt_Simple.Horizon.designation'] == "NA" ~ NaN,
+  df_cl[, 'wt_Simple.Horizon.designation'] == "" ~ NaN
+)
+```
+
+#Numeric classification of H, O, A, and C horizons class transition
+```{r}
+df_cl[, 'tr_Simple.Horizon.designation_num'] <- case_when(
+  df_cl[, 'tr_Simple.Horizon.designation'] == "H" ~ 1,
+  df_cl[, 'tr_Simple.Horizon.designation'] == "O" ~ 2,
+  df_cl[, 'tr_Simple.Horizon.designation'] == "A" ~ 3,
+  df_cl[, 'tr_Simple.Horizon.designation'] == "C" ~ 4,
+  df_cl[, 'tr_Simple.Horizon.designation'] == "NA" ~ NaN,
+  df_cl[, 'tr_Simple.Horizon.designation'] == "" ~ NaN
+)
+```
+
+#Numeric classification of H, O, A, and C horizons class upland
+```{r}
+df_cl[, 'up_Simple.Horizon.designation_num'] <- case_when(
+  df_cl[, 'up_Simple.Horizon.designation'] == "H" ~ 1,
+  df_cl[, 'up_Simple.Horizon.designation'] == "O" ~ 2,
+  df_cl[, 'up_Simple.Horizon.designation'] == "A" ~ 3,
+  df_cl[, 'up_Simple.Horizon.designation'] == "C" ~ 4,
+  df_cl[, 'up_Simple.Horizon.designation'] == "NA" ~ NaN,
+  df_cl[, 'up_Simple.Horizon.designation'] == "" ~ NaN
+)
+```
+
+##dataset_Kit Level 
+#Numeric classification of weather_simplified Sunny, cloudy, Overcast, NA
+```{r}
+df_kl[, 'weather_simplified_num'] <- case_when(
+  df_kl[, 'weather_simplified'] == "Sunny" ~ 1,
+  df_kl[, 'weather_simplified'] == "Cloudy" ~ 2,
+  df_kl[, 'weather_simplified'] == "Overcast" ~ 3,
+  df_kl[, 'weather_simplified'] == "NA" ~ NaN,
+  
+)
+```
+
+
+
