@@ -70,8 +70,67 @@ meta = read_csv(file = KitMD$name)
 file.remove(KitMD$name)
 file.remove(c(files$name))
 
-soils_data_all_wmeta <- full_join(soils_data_all, meta, by="kit_id")
+#read in additional metadata from Donnie (need to get more details from him)
+Donnie_soils_type <- read_csv("data/220713_soil_types_from_donnie.csv", show_col_types = FALSE)
 
+```
+
+##Clean soils metadata
+Do we know why there are NAs in these metrics for certain kits?
+e.g. K012 Transition, Upland, K026 etc 
+
+```{r soil metadata, echo=FALSE}
+collection_metadata_soiltypes_raw_1 <-  Donnie_soils_type %>%
+   pivot_longer(cols = c(wetland_soil_horizon, transition_soil_horizon, upland_soil_horizon),
+               names_to = 'transect_location') %>% 
+  select(kit_id, transect_location, value) %>%
+  rename(soil_horizon = value) %>%
+  mutate(transect_location = stringr::str_replace(transect_location,"_soil_horizon", "")) %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
+    mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland"))  
+
+collection_metadata_soiltypes_raw_2 <-  Donnie_soils_type %>%
+   pivot_longer(cols = c(`wt_Percent clay`, `tr_Percent clay`, `up_Percent clay`),
+               names_to = 'transect_location') %>% 
+  select(kit_id, transect_location, value) %>%
+  rename(percent_clay = value) %>%
+  mutate(transect_location = stringr::str_replace(transect_location,"_Percent clay", "")) %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"up","Upland"))  %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"tr","Transition"))  %>% 
+    mutate(transect_location = stringr::str_replace(transect_location,"wt","Wetland"))  
+
+collection_metadata_soiltypes_raw_3 <-  Donnie_soils_type %>%
+   pivot_longer(cols = c(`wt_Percent sand`, `tr_Percent sand`, `up_Percent sand`),
+               names_to = 'transect_location') %>% 
+  select(kit_id, transect_location, value) %>%
+  rename(percent_sand = value) %>%
+  mutate(transect_location = stringr::str_replace(transect_location,"_Percent sand", "")) %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"up","Upland"))  %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"tr","Transition"))  %>% 
+    mutate(transect_location = stringr::str_replace(transect_location,"wt","Wetland"))  
+
+collection_metadata_soiltypes_a <- full_join(collection_metadata_soiltypes_raw_1, collection_metadata_soiltypes_raw_2, by=c("kit_id","transect_location"))
+
+collection_metadata_soiltypes <- full_join(collection_metadata_soiltypes_a, collection_metadata_soiltypes_raw_3, by=c("kit_id","transect_location"))
+
+collection_metadata_soiltypes <- collection_metadata_soiltypes %>%
+ mutate(campaign= "EC1") 
+
+```
+
+
+               
+##Merge and save
+```{r merge and save, echo=FALSE}
+soils_data_all_wmeta_a <- full_join(soils_data_all, meta, by="kit_id")
+
+soils_data_all_wmeta <- full_join(soils_data_all_wmeta_a, collection_metadata_soiltypes, by=c("kit_id","transect_location","campaign"))
+
+#something weird happening with kit 057
+soils_data_all_wmeta <- soils_data_all_wmeta %>% 
+  mutate(campaign = replace_na(campaign, "EC1"))
+  
 # Save as rds
 saveRDS(soils_data_all, "./soils_data_merged.rds")
 saveRDS(soils_data_all_wmeta, "./soils_data_merged_withmeta.rds")
