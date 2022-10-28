@@ -171,4 +171,9 @@ ggplot(df_ratio, aes(gwc_perc, tn_perc, color = transect_location)) +
   stat_regline_equation(aes(label = ..adj.rr.label..), label.x.npc = 'center', 
                         label.y.npc = 'bottom')
 
+## There are a lot of NA's in soilparty and the subsequent dataframes. Trying 
+## to find them here. 
+
 new_DF<-soilparty[is.na(soilparty$region),]
+## to save a new dataframe as a file:
+    ## save(new_DF, file="NAcolumns.Rda") 
