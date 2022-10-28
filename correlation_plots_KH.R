@@ -89,8 +89,8 @@ df_cor %>%
 
 ## Here is with the TC/TN ratio
 df_ratio <- df %>% 
-  mutate(tc_tn_ratio = tc_perc/tn_perc)
- 
+  mutate(tc_tn_ratio = tc_perc/tn_perc) 
+  
 
 ggplot(df_ratio, aes(gwc_perc, tc_tn_ratio)) +
   geom_point() + 
@@ -170,3 +170,5 @@ ggplot(df_ratio, aes(gwc_perc, tn_perc, color = transect_location)) +
   theme_gray() +
   stat_regline_equation(aes(label = ..adj.rr.label..), label.x.npc = 'center', 
                         label.y.npc = 'bottom')
+
+new_DF<-soilparty[is.na(soilparty$region),]
