@@ -20,7 +20,7 @@ soilparty = readRDS("./soils_data_merged_withmeta.rds")
 Getting together only the samples that have a complete dataset 
 ```{r data, echo=FALSE}
 completeset = soilparty %>%
-    select(campaign, kit_id, transect_location, bulk_density_g_cm3, gwc_perc, tn_perc, tc_perc, visible_minerals, visible_iron_oxidation, specific_conductance_us_cm, ph, region, soil_horizon, percent_clay, percent_sand) %>%
+    select(campaign, kit_id, transect_location, loi_perc, bulk_density_g_cm3, gwc_perc, tn_perc, tc_perc, specific_conductance_us_cm, ph, region, percent_clay, percent_sand) %>%
     select(!ends_with("_flag")) %>% na.omit()
 ```
 
@@ -50,14 +50,14 @@ soils4multi = completeset %>% unite(uniqueid, c(campaign,kit_id,transect_locatio
 column_to_rownames(var="uniqueid")
 
 
-soils4multi$visible_minerals <- factor(soils4multi$visible_minerals, levels =c("None", "Mica", "Quartz"))
-soils4multi$visible_minerals <- as.integer(soils4multi$visible_minerals)
-
-soils4multi$visible_iron_oxidation <- factor(soils4multi$visible_iron_oxidation, levels =c("No", "Yes"))
-soils4multi$visible_iron_oxidation <- as.integer(soils4multi$visible_iron_oxidation)
-
-soils4multi$soil_horizon <- factor(soils4multi$soil_horizon, levels =c("Organic", "Mineral", "Organic, Mineral"))
-soils4multi$soil_horizon <- as.integer(soils4multi$soil_horizon)
+# soils4multi$visible_minerals <- factor(soils4multi$visible_minerals, levels =c("None", "Mica", "Quartz"))
+# soils4multi$visible_minerals <- as.integer(soils4multi$visible_minerals)
+# 
+# soils4multi$visible_iron_oxidation <- factor(soils4multi$visible_iron_oxidation, levels =c("No", "Yes"))
+# soils4multi$visible_iron_oxidation <- as.integer(soils4multi$visible_iron_oxidation)
+# 
+# soils4multi$soil_horizon <- factor(soils4multi$soil_horizon, levels =c("Organic", "Mineral", "Organic, Mineral"))
+# soils4multi$soil_horizon <- as.integer(soils4multi$soil_horizon)
 
 
 ```
@@ -70,6 +70,32 @@ library(vegan)
 soilspca = prcomp(soils4multi, retx = TRUE, center = TRUE, scale. = TRUE)
 biplot(soilspca)
 
+soilsnmds = metaMDS(soils4multi, distance="bray", 
+          k = 3,
+          maxit = 999, 
+          trymax = 500,
+          wascores = TRUE)
+
+ordiplot (soilsnmds, display = 'si', type = 'n')
+points (soilsnmds, col = transpal, pch = 19)
+ordiellipse(soilsnmds, groups=completeset$transect_location, col=c("#056009","#8E7941","#021677"))
+plot(env1, p.max = 0.05)
+
+env1 <- envfit(soilsnmds, completeset, permu = 999)
+
+NMR_NMS_4 %>% ordiplot(type='none') %>% points("sites") %>% ordiellipse(groups=group2$Location, col=c("#999933","#d7191c","#abdda4") )
+plot(NMRenv1, p.max = 0.05)
+
+# soilsnmds %>% ordiplot(type='points') %>% points(col=c("#8E7941","#DCCD6A","#27220F")) %>% ordiellipse(groups=completeset$transect_location, col=c("#8E7941","#DCCD6A","#27220F"),label = TRUE)
+
+
+#wetland = "#021677
+#transition = "#056009"
+#upland = "#8E7941"
+
+
+transpal = c("#056009","#8E7941","#021677")
+  
 library(dplyr)
 library(ggplot2)
 library(ggfortify)
