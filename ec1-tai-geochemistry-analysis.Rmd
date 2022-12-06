@@ -91,6 +91,7 @@ points (soilsnmds, col = transpal, pch = 19)
 ordiellipse(soilsnmds, groups=completeset$transect_location, col=c("#056009","#8E7941","#021677"))
 plot(env1, p.max = 0.05)
 
+
 # soilsnmds %>% ordiplot(type='points') %>% points(col=c("#8E7941","#DCCD6A","#27220F")) %>% ordiellipse(groups=completeset$transect_location, col=c("#8E7941","#DCCD6A","#27220F"),label = TRUE)
 
 
