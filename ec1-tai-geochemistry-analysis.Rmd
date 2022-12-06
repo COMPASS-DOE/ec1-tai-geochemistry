@@ -66,9 +66,13 @@ This is a mess:
 
 ```{r Playing, echo=FALSE}
 library(vegan)
+library(dplyr)
+library(ggplot2)
+library(ggfortify)
+library("wesanderson")
 
-soilspca = prcomp(soils4multi, retx = TRUE, center = TRUE, scale. = TRUE)
-biplot(soilspca)
+# soilspca = prcomp(soils4multi, retx = TRUE, center = TRUE, scale. = TRUE)
+# biplot(soilspca)
 
 soilsnmds = metaMDS(soils4multi, distance="bray", 
           k = 3,
@@ -76,15 +80,16 @@ soilsnmds = metaMDS(soils4multi, distance="bray",
           trymax = 500,
           wascores = TRUE)
 
+transpal = c("#056009","#8E7941","#021677")
+
+regionloc <- completeset %>% select(transect_location, region)
+
+env1 <- envfit(soilsnmds, regionloc, permu = 999)
+
 ordiplot (soilsnmds, display = 'si', type = 'n')
 points (soilsnmds, col = transpal, pch = 19)
 ordiellipse(soilsnmds, groups=completeset$transect_location, col=c("#056009","#8E7941","#021677"))
 plot(env1, p.max = 0.05)
-
-env1 <- envfit(soilsnmds, completeset, permu = 999)
-
-NMR_NMS_4 %>% ordiplot(type='none') %>% points("sites") %>% ordiellipse(groups=group2$Location, col=c("#999933","#d7191c","#abdda4") )
-plot(NMRenv1, p.max = 0.05)
 
 # soilsnmds %>% ordiplot(type='points') %>% points(col=c("#8E7941","#DCCD6A","#27220F")) %>% ordiellipse(groups=completeset$transect_location, col=c("#8E7941","#DCCD6A","#27220F"),label = TRUE)
 
@@ -93,24 +98,16 @@ plot(NMRenv1, p.max = 0.05)
 #transition = "#056009"
 #upland = "#8E7941"
 
-
-transpal = c("#056009","#8E7941","#021677")
-  
-library(dplyr)
-library(ggplot2)
-library(ggfortify)
-library("wesanderson")
-
-pal <- wes_palette("Darjeeling2",3, type = "discrete")
-
-graphy <-autoplot(soilspca, data = completeset, shape= 'region', colour= 'transect_location',
-  size=2,
-  loadings = TRUE, loadings.colour = 'black',
-  loadings.label = TRUE, loadings.label.size = 2)+
-  scale_colour_manual(values = pal) + 
-  cowplot::theme_cowplot()
-
-print(graphy)
+# pal <- wes_palette("Darjeeling2",3, type = "discrete")
+# 
+# graphy <-autoplot(soilspca, data = completeset, shape= 'region', colour= 'transect_location',
+#   size=2,
+#   loadings = TRUE, loadings.colour = 'black',
+#   loadings.label = TRUE, loadings.label.size = 2)+
+#   scale_colour_manual(values = pal) + 
+#   cowplot::theme_cowplot()
+# 
+# print(graphy)
 
 ```
 
