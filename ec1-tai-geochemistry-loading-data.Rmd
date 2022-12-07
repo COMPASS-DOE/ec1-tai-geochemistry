@@ -67,7 +67,7 @@ soils_data_all <- files$name %>%
 
 #Metadata 
 KitMD = googledrive::drive_download(KitMetadata, overwrite = TRUE)
-meta = read_csv(file = KitMD$name)
+meta.raw = read_csv(file = KitMD$name)
 
 ## Clean up local (delete downloaded files)
 file.remove(KitMD$name)
@@ -75,6 +75,37 @@ file.remove(c(files$name))
 
 #read in additional metadata from Donnie (need to get more details from him)
 Donnie_soils_type <- read_csv("data/220713_soil_types_from_donnie.csv", show_col_types = FALSE)
+
+```
+#Get rid of things that don't exist 
+```{r missing}
+metadata_directory = "https://drive.google.com/drive/folders/1IQUq_sD-Jama7ajaZl1zW_9zlWfyCohn"
+
+
+
+## Next, list all files in the directory, filter out the Kit Level file and snag the file name
+metadata_file <- drive_ls(metadata_directory) %>%
+  filter(grepl("KitLevel", name)) %>%
+  pull(name)
+
+
+
+## Now download that file to your local (an annoying googledrive requirement)
+drive_download(metadata_file, overwrite = T)
+
+
+
+## Finally, read those data in and format so we can set up a list of all samples received
+metadata_collected <- read_csv(metadata_file) %>%
+  select(kit_id, samples_collected) %>%
+  mutate(Sediment = ifelse(str_detect(samples_collected, "Sediment"), T, F),
+         Wetland = ifelse(str_detect(samples_collected, "Wetland"), T, F),
+         Transition = ifelse(str_detect(samples_collected, "Transition"), T, F),
+         Upland = ifelse(str_detect(samples_collected, "Upland"), T, F)) %>%
+  pivot_longer(cols = c(Sediment, Wetland, Transition, Upland),
+               names_to = "transect_location", values_to = "collected")
+
+saveRDS(metadata_collected, "./soils_data_collected_samples_list.rds")
 
 ```
 
@@ -126,6 +157,9 @@ collection_metadata_soiltypes <- collection_metadata_soiltypes %>%
                
 ##Merge and save
 ```{r merge and save, echo=FALSE}
+
+meta = left_join(metadata_collected, meta1, by="kit_id")
+
 soils_data_all_wmeta_a <- full_join(soils_data_all, meta, by="kit_id")
 
 soils_data_all_wmeta <- full_join(soils_data_all_wmeta_a, collection_metadata_soiltypes, by=c("kit_id","transect_location","campaign"))
