@@ -154,13 +154,75 @@ ggplot(soilparty, aes(loi_perc, tc_perc, color = transect_location)) +
   stat_regline_equation(label.x = 25, aes(label = ..adj.rr.label..))
 
 ## The GWC vs TC/TN correlations aren't as strong as the ones btwn LOI and TC/TN
-ggplot(soilparty, aes(gwc_perc, tn_perc, color = transect_location)) +
+
+#### AGU PLOTS ####
+agucolors = c("#056009","#8E7941","#021677")
+
+##### Positive Relationships #####
+TNGWC = soilparty %>%
+  filter(transect_location %in% c("Upland", "Wetland", "Transition")) %>%
+  ggplot(aes(gwc_perc, tn_perc, color = transect_location)) +
   geom_point(alpha = 0.25) + 
   geom_smooth(method = "lm", se = F) +
+  scale_color_manual(values=agucolors) +
   ggtitle("Correlation Between Total Nitrogen and Gravimetric Water Content") +
   labs( y = "Total Nitrogen (%)", x = "GWC (%)", color = 'Transect Location') +
-  stat_regline_equation(label.x = 400, aes(label = ..adj.rr.label..))
+  stat_regline_equation(label.x = 400, aes(label = ..adj.rr.label..)) + 
+  cowplot::theme_cowplot()
 
+print(TNGWC)
+
+cowplot::save_plot("./TN_GWC.png", TNGWC, dpi=300)
+
+
+TCGWC = soilparty %>%
+  filter(transect_location %in% c("Upland", "Wetland", "Transition")) %>%
+  ggplot(aes(gwc_perc, tc_perc, color = transect_location)) +
+  geom_point(alpha = 0.25) + 
+  geom_smooth(method = "lm", se = F) +
+  scale_color_manual(values=agucolors) +
+  ggtitle("Correlation Between Total Carbon and Gravimetric Water Content") +
+  labs( y = "Total Carbon (%)", x = "GWC (%)", color = 'Transect Location') +
+  stat_regline_equation(label.x = 400, aes(label = ..adj.rr.label..)) + 
+  cowplot::theme_cowplot()
+
+print(TCGWC)
+
+cowplot::save_plot("./TC_GWC.png", TCGWC, dpi=300)
+
+#### Negative Relationships ####
+TNBD = soilparty %>%
+  filter(transect_location %in% c("Upland", "Wetland", "Transition")) %>%
+  ggplot(aes(bulk_density_g_cm3, tn_perc, color = transect_location)) +
+  geom_point(alpha = 0.25) + 
+  geom_smooth(method = "lm", se = F) +
+  scale_color_manual(values=agucolors) +
+  ggtitle("Correlation Between Total Nitrogen and Bulk Density") +
+  labs( y = "Total Nitrogen (%)", x = "Bulk Density (g/cm3)", color = 'Transect Location') +
+  stat_regline_equation(label.x = 1, aes(label = ..adj.rr.label..)) + 
+  cowplot::theme_cowplot()
+
+print(TNBD)
+
+cowplot::save_plot("./TN_BD.png", TNBD, dpi=300)
+
+
+TCBD = soilparty %>%
+  filter(transect_location %in% c("Upland", "Wetland", "Transition")) %>%
+  ggplot(aes(bulk_density_g_cm3, tc_perc, color = transect_location)) +
+  geom_point(alpha = 0.25) + 
+  geom_smooth(method = "lm", se = F) +
+  scale_color_manual(values=agucolors) +
+  ggtitle("Correlation Between Total Carbon and Bulk Density") +
+  labs( y = "Total Carbon (%)", x = "Bulk Density (g/cm3)", color = 'Transect Location') +
+  stat_regline_equation(label.x = 1, aes(label = ..adj.rr.label..)) + 
+  cowplot::theme_cowplot()
+
+print(TCBD)
+
+cowplot::save_plot("./TC_BD.png", TCBD, dpi=300)
+
+#####################
 ggplot(soilparty, aes(gwc_perc, tc_perc, color = transect_location)) +
   geom_point(alpha = 0.25) + 
   geom_smooth(method = "lm", se = F) +
@@ -202,7 +264,8 @@ df <- soilparty %>%
 ## Now let's prepare our data for correlations
 df_cor <- df %>% 
   select(where(is.numeric)) %>% ## only select numeric variables
-  drop_na() ## correlations fail if there are missing values (NAs) so drop em
+  drop_na() %>%
+  select(-location_numeric)## correlations fail if there are missing values (NAs) so drop em
 
 ## Time to make our first correlation matrix!
 cor(df_cor)
@@ -214,10 +277,12 @@ cor(df_cor)
 ## (when one variable increases, the other decreases).
 
 ## An easier way to visualize this is with corrplot()
-matrix <- cor(df_cor) %>% 
-  corrplot(addCoef.col = 'black', col = COL2('PiYG'), tl.srt = 45, tl.col = 'black', 
-           type = 'lower') 
+library("wesanderson")
+pal <- wes_palette("Darjeeling2",21, type = "continuous")
 
+matrix <- cor(df_cor) %>% 
+  corrplot(addCoef.col = 'black', col = COL2("BrBG"), tl.srt = 45, tl.col = 'black', 
+           type = 'lower', shade.col = c("blue","tan")) 
 
 ## Interpretation: We can see that bulk density is negatively correlated to
 ## both GWC and LOI. We can also see that GWC and LOI are positively correlated,
