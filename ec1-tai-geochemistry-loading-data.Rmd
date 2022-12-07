@@ -60,6 +60,9 @@ lapply(files$name, drive_download, overwrite = TRUE)
 soils_data_all <- files$name %>% 
   map(read_data) %>% 
   reduce(full_join, by= c("campaign", "kit_id", "transect_location")) %>%
+  mutate(kit_id = str_trim(kit_id, side = c("both", "left", "right")),
+         transect_location = str_trim(transect_location, side = c("both", "left", "right")),
+         campaign = str_trim(campaign, side = c("both", "left", "right"))) %>%
   bind_cols()
 
 #Metadata 
