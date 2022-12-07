@@ -205,7 +205,7 @@ df_cor <- df %>%
   drop_na() ## correlations fail if there are missing values (NAs) so drop em
 
 ## Time to make our first correlation matrix!
-cor(df_cor)
+cor(df_cor, method="spearman")
 ## Interpreting this: Each value is the correlation coefficient between two 
 ## variables. You can see for the first row in the first column, there's a 
 ## correlation of 1. That's because bulk_density perfectly correlates with itself.
@@ -214,7 +214,7 @@ cor(df_cor)
 ## (when one variable increases, the other decreases).
 
 ## An easier way to visualize this is with corrplot()
-matrix <- cor(df_cor) %>% 
+matrix <- cor(df_cor, method="spearman") %>% 
   corrplot(addCoef.col = 'black', col = COL2('PiYG'), tl.srt = 45, tl.col = 'black', 
            type = 'lower') 
 
