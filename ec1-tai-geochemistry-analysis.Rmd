@@ -20,8 +20,7 @@ soilparty = readRDS("./soils_data_merged_withmeta.rds")
 Getting together only the samples that have a complete dataset 
 ```{r data, echo=FALSE}
 completeset = soilparty %>%
-    select(campaign, kit_id, transect_location, loi_perc, bulk_density_g_cm3, gwc_perc, tn_perc, tc_perc, specific_conductance_us_cm, ph, region, percent_clay, percent_sand) 
-#%>% select(!ends_with("_flag")) %>% na.omit()
+    select(campaign, kit_id, transect_location, loi_perc, bulk_density_g_cm3, gwc_perc, tn_perc, tc_perc, specific_conductance_us_cm, ph, region, percent_clay, percent_sand) %>% select(!ends_with("_flag")) %>% na.omit()
 ```
 
 
@@ -87,9 +86,9 @@ regionloc <- completeset %>% select(transect_location, region)
 env1 <- envfit(soilsnmds, regionloc, permu = 999)
 
 ordiplot (soilsnmds, display = 'si', type = 'n')
-points (soilsnmds, col = transpal, pch = 19)
+points (soilsnmds, col = alpha(transpal, 0.5), pch = 19)
 ordiellipse(soilsnmds, groups=completeset$transect_location, col=c("#056009","#8E7941","#021677"))
-plot(env1, p.max = 0.05)
+#plot(env1, p.max = 0.05, label=FALSE)
 
 
 # soilsnmds %>% ordiplot(type='points') %>% points(col=c("#8E7941","#DCCD6A","#27220F")) %>% ordiellipse(groups=completeset$transect_location, col=c("#8E7941","#DCCD6A","#27220F"),label = TRUE)
