@@ -150,7 +150,8 @@ collection_metadata_soiltypes_a <- full_join(collection_metadata_soiltypes_raw_1
 collection_metadata_soiltypes <- full_join(collection_metadata_soiltypes_a, collection_metadata_soiltypes_raw_3, by=c("kit_id","transect_location"))
 
 collection_metadata_soiltypes <- collection_metadata_soiltypes %>%
- mutate(campaign= "EC1") 
+ mutate(campaign= "EC1") %>%
+ drop_na(-kit_id, -transect_location, -campaign) #need to drop rows where all 3 variables are NA
 
 ```
 
@@ -194,3 +195,5 @@ soils_data_all_wmeta_vis <- full_join(soils_data_all_wmeta, visual_clean, by=c("
 saveRDS(soils_data_all, "./soils_data_merged.rds")
 saveRDS(soils_data_all_wmeta_vis, "./soils_data_merged_withmeta.rds")
 ```
+
+```{r LOI sass, echo=FALSE}
