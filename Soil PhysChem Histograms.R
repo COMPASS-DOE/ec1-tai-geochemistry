@@ -42,9 +42,32 @@ qplot(interaction(gwc_perc,bulk_density_g_cm3),transect_location,data=phys_chem,
 #Box plot distributions by transect and region but the scaling is all jacked up
 ggboxplot(phys_chem, x = "gwc_perc", y = "bulk_density_g_cm3",  color = "transect_location", palette = c("red", "black","blue"), facet.by = "region")
 
-#Anova test 
-df$gwc_perc = factor(df$gwc_perc)
-df$bulk_density_g_cm3 = factor(df$bulk_density_g_cm3)
+##trying the box plot facet with Allison's code for BD
+phys_chem %>% ggplot(aes(x = transect_location, y = bulk_density_g_cm3))+
+  geom_jitter(width = 0.1)+
+  facet_wrap(~region)+
+  labs(x = "",
+       y = "Bulk density, g/cm3")
 
-phys_chem %>% select(transect_location, bulk_density_g_cm3, gwc_perc) %>%
-  anova_test(transect_location ~bulk_density_g_cm3*gwc_perc)
+## facet plot for GWC
+phys_chem %>% ggplot(aes(x = transect_location, y = gwc_perc))+
+  geom_jitter(width = 0.1)+
+  facet_wrap(~region)+
+  labs(x = "",
+       y = "Gravimetric Water Content (%)")
+
+## facet plot for SC
+phys_chem %>% ggplot(aes(x = transect_location, y = specific_conductance_us_cm))+
+  geom_jitter(width = 0.1)+
+  facet_wrap(~region)+
+  labs(x = "",
+       y = "Specific Conductance, us cm")
+
+##facet plot for LOI
+phys_chem %>% ggplot(aes(x = transect_location, y = loi_perc))+
+  geom_jitter(width = 0.1)+
+  facet_wrap(~region)+
+  labs(x = "",
+       y = "Loss On Ignition (%)")
+
+
