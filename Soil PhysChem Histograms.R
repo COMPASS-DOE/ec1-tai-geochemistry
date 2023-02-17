@@ -19,6 +19,13 @@ phys_chem %>% ggplot(aes(x = specific_conductance_us_cm))+
   geom_vline(aes(xintercept=mean(specific_conductance_us_cm, na.rm=T)), color="red", linetype="dashed", size=1)+
   geom_density()
 
+#LOI histogram
+phys_chem %>% ggplot(aes(x = loi_perc))+
+  geom_histogram(aes(y = ..density..),bins=20, color="black", fill="cyan4")+
+  geom_vline(aes(xintercept=mean(loi_perc, na.rm=T)), color="red", linetype="dashed", size=1)+
+  geom_density()
+
+
 #Box plot for GWC vs Transect
 qplot(data=phys_chem,x = transect_location, y = gwc_perc, fill=transect_location,geom = "boxplot")+
   geom_jitter()
@@ -69,5 +76,23 @@ phys_chem %>% ggplot(aes(x = transect_location, y = loi_perc))+
   facet_wrap(~region)+
   labs(x = "",
        y = "Loss On Ignition (%)")
+
+##ANOVA
+phys_chem$transect_location <- as.factor(phys_chem$transect_location)
+anova(lm(gwc_perc ~ phys_chem$transect_location, phys_chem))
+
+
+##AOV instead of ANOVA for GWC and Transect Location
+aov_gwc<- aov(gwc_perc ~ transect_location, data = phys_chem)  
+summary.aov(aov_gwc)
+Tukey_gwc <-TukeyHSD(aov_gwc, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_gwc)
+
+##trying to plot Tukey results on box plot 
+multcompBoxplot(formula = gwc_perc ~ transect_location,
+  data = phys_chem,
+  horizontal = TRUE,
+  compFn = "TukeyHSD")
+
 
 
