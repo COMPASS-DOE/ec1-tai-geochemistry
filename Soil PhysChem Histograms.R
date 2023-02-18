@@ -2,13 +2,13 @@ library(tidyverse)
 library(ggplot2)
 library(multcomp)
 
-soils_data_foralex <- load("~/Users/homo761/Library/CloudStorage/OneDrive-PNNL/Documents/GitHub/ec1-tai-geochemistry/soils_data_foralex.rds")
+soils_data_foralex <- readRDS("~/GitHub/ec1-tai-geochemistry/soils_data_foralex.rds")
 
 #Creating Dataframe 
 phys_chem <- soils_data_foralex %>%
-  select("kit_id", "gwc_perc","bulk_density_g_cm3", "specific_conductance_us_cm", "loi_perc", "transect_location", "region") %>%
   mutate(transect_location_factor=factor(transect_location,levels=c("Wetland", "Transition", "Upland")),
-         region_factor=factor(region, levels=c("Chesapeake Bay", "Great Lakes")))
+         region_factor=factor(region, levels=c("Chesapeake Bay", "Great Lakes"))) %>%
+  dplyr::select(kit_id, gwc_perc,bulk_density_g_cm3, specific_conductance_us_cm, loi_perc, transect_location, region, transect_location_factor, region_factor)
 
 
 #----------------------------------------Histograms--------------------------------------------------------------------------
