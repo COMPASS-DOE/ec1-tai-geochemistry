@@ -47,7 +47,7 @@ pacman::p_load(tidyverse, # keep things tidy
 
 ## Set GDrive URL raw data files
 directory = "https://drive.google.com/drive/u/1/folders/1r3sP7tvhG2btZACvxZUdtrtSiLVGUUGp"
-KitMetadata = "https://drive.google.com/file/d/1eXPh-873xVYcREOAsbZu3pEgU4k9ykf-/view"
+KitMetadata = "https://drive.google.com/file/d/1auYnbc16eg6Dg6AzUJ_DNP5UOd2H-7Kl/view?usp=sharing"
 
 ## Create a list of files to download
 files <- drive_ls(directory) %>% 
@@ -60,11 +60,15 @@ lapply(files$name, drive_download, overwrite = TRUE)
 soils_data_all <- files$name %>% 
   map(read_data) %>% 
   reduce(full_join, by= c("campaign", "kit_id", "transect_location")) %>%
-  bind_cols()
+  mutate(kit_id = str_trim(kit_id, side = c("both", "left", "right")),
+         transect_location = str_trim(transect_location, side = c("both", "left", "right")),
+         campaign = str_trim(campaign, side = c("both", "left", "right"))) %>%
+  bind_cols() %>%
+  select(-visible_minerals)
 
 #Metadata 
 KitMD = googledrive::drive_download(KitMetadata, overwrite = TRUE)
-meta = read_csv(file = KitMD$name)
+meta.raw = read_csv(file = KitMD$name)
 
 ## Clean up local (delete downloaded files)
 file.remove(KitMD$name)
@@ -72,6 +76,37 @@ file.remove(c(files$name))
 
 #read in additional metadata from Donnie (need to get more details from him)
 Donnie_soils_type <- read_csv("data/220713_soil_types_from_donnie.csv", show_col_types = FALSE)
+
+```
+#Get rid of things that don't exist 
+```{r missing}
+metadata_directory = "https://drive.google.com/drive/folders/1IQUq_sD-Jama7ajaZl1zW_9zlWfyCohn"
+
+
+
+## Next, list all files in the directory, filter out the Kit Level file and snag the file name
+metadata_file <- drive_ls(metadata_directory) %>%
+  filter(grepl("KitLevel", name)) %>%
+  pull(name)
+
+
+
+## Now download that file to your local (an annoying googledrive requirement)
+drive_download(metadata_file, overwrite = T)
+
+
+
+## Finally, read those data in and format so we can set up a list of all samples received
+metadata_collected <- read_csv(metadata_file) %>%
+  select(kit_id, samples_collected) %>%
+  mutate(Sediment = ifelse(str_detect(samples_collected, "Sediment"), T, F),
+         Wetland = ifelse(str_detect(samples_collected, "Wetland"), T, F),
+         Transition = ifelse(str_detect(samples_collected, "Transition"), T, F),
+         Upland = ifelse(str_detect(samples_collected, "Upland"), T, F)) %>%
+  pivot_longer(cols = c(Sediment, Wetland, Transition, Upland),
+               names_to = "transect_location", values_to = "collected")
+
+saveRDS(metadata_collected, "./soils_data_collected_samples_list.rds")
 
 ```
 
@@ -115,23 +150,50 @@ collection_metadata_soiltypes_a <- full_join(collection_metadata_soiltypes_raw_1
 collection_metadata_soiltypes <- full_join(collection_metadata_soiltypes_a, collection_metadata_soiltypes_raw_3, by=c("kit_id","transect_location"))
 
 collection_metadata_soiltypes <- collection_metadata_soiltypes %>%
- mutate(campaign= "EC1") 
+ mutate(campaign= "EC1") %>%
+ drop_na(-kit_id, -transect_location, -campaign) #need to drop rows where all 3 variables are NA
 
 ```
 
+```{r visual metrics, echo=FALSE}
+visual = googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1Swr2Qx-mBXrhRPIpGf-YehSEC6zOwTPKB3u2K9s2Z7A/edit#gid=1593904722")
 
+visual_clean = visual %>%
+  mutate(kit_id = stringr::str_extract(Sample,"K[:digit:]{3}" ),
+         transect_location = stringr::str_extract(Sample,"upland|transition|wetland|sediment" ),
+         campaign = "EC1") %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
+    mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland")) %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"sediment","Sediment")) %>%
+  rename(sample_weight_g = `Sample weight (from tare) (g)`,
+         plant_litter= `Plant litter`,
+         visible_minerals = `Visible Minerals`) %>%
+ select(campaign, kit_id, transect_location, sample_weight_g, plant_litter, visible_minerals)
+```
                
 ##Merge and save
 ```{r merge and save, echo=FALSE}
-soils_data_all_wmeta_a <- full_join(soils_data_all, meta, by="kit_id")
 
-soils_data_all_wmeta <- full_join(soils_data_all_wmeta_a, collection_metadata_soiltypes, by=c("kit_id","transect_location","campaign"))
+meta1 = left_join(metadata_collected, meta.raw, by=c("kit_id", "samples_collected"))
+
+meta = meta1 %>% filter(collected == TRUE) %>%
+  mutate(campaign = "EC1")
+
+soils_data_all_wmeta_a <- full_join(soils_data_all, meta, by=c("kit_id", "transect_location", "campaign"))
+
+soils_data_all_wmeta1 <- full_join(soils_data_all_wmeta_a, collection_metadata_soiltypes, by=c("kit_id","transect_location","campaign"))
 
 #something weird happening with kit 057
-soils_data_all_wmeta <- soils_data_all_wmeta %>% 
-  mutate(campaign = replace_na(campaign, "EC1"))
+
+#also we have a bunch of things that were theoretically not collected... 
+#and visual metrics where we have no other data...
+
+soils_data_all_wmeta_vis <- full_join(soils_data_all_wmeta, visual_clean, by=c("kit_id", "transect_location", "campaign"))
   
 # Save as rds
 saveRDS(soils_data_all, "./soils_data_merged.rds")
-saveRDS(soils_data_all_wmeta, "./soils_data_merged_withmeta.rds")
+saveRDS(soils_data_all_wmeta_vis, "./soils_data_merged_withmeta.rds")
 ```
+
+```{r LOI sass, echo=FALSE}

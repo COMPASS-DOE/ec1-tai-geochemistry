@@ -19,9 +19,10 @@ soilparty = readRDS("./soils_data_merged_withmeta.rds")
 ##Complete Data
 Getting together only the samples that have a complete dataset 
 ```{r data, echo=FALSE}
-completeset = soilparty %>%
-    select(campaign, kit_id, transect_location, bulk_density_g_cm3, gwc_perc, tn_perc, tc_perc, visible_minerals, visible_iron_oxidation, specific_conductance_us_cm, ph, region, soil_horizon, percent_clay, percent_sand) %>%
-    select(!ends_with("_flag")) %>% na.omit()
+completeset = soilparty %>% filter(collected == TRUE) %>%
+    select(campaign, kit_id, transect_location, loi_perc, bulk_density_g_cm3, gwc_perc, tn_perc, tc_perc, specific_conductance_us_cm, ph, region, percent_clay, percent_sand, plant_litter, visible_minerals, sample_weight_g) %>% select(!ends_with("_flag")) %>% na.omit()
+
+saveRDS(completeset, "./soils_data_foralex.rds")
 ```
 
 
@@ -50,14 +51,14 @@ soils4multi = completeset %>% unite(uniqueid, c(campaign,kit_id,transect_locatio
 column_to_rownames(var="uniqueid")
 
 
-soils4multi$visible_minerals <- factor(soils4multi$visible_minerals, levels =c("None", "Mica", "Quartz"))
-soils4multi$visible_minerals <- as.integer(soils4multi$visible_minerals)
-
-soils4multi$visible_iron_oxidation <- factor(soils4multi$visible_iron_oxidation, levels =c("No", "Yes"))
-soils4multi$visible_iron_oxidation <- as.integer(soils4multi$visible_iron_oxidation)
-
-soils4multi$soil_horizon <- factor(soils4multi$soil_horizon, levels =c("Organic", "Mineral", "Organic, Mineral"))
-soils4multi$soil_horizon <- as.integer(soils4multi$soil_horizon)
+# soils4multi$visible_minerals <- factor(soils4multi$visible_minerals, levels =c("None", "Mica", "Quartz"))
+# soils4multi$visible_minerals <- as.integer(soils4multi$visible_minerals)
+# 
+# soils4multi$visible_iron_oxidation <- factor(soils4multi$visible_iron_oxidation, levels =c("No", "Yes"))
+# soils4multi$visible_iron_oxidation <- as.integer(soils4multi$visible_iron_oxidation)
+# 
+# soils4multi$soil_horizon <- factor(soils4multi$soil_horizon, levels =c("Organic", "Mineral", "Organic, Mineral"))
+# soils4multi$soil_horizon <- as.integer(soils4multi$soil_horizon)
 
 
 ```
@@ -66,25 +67,49 @@ This is a mess:
 
 ```{r Playing, echo=FALSE}
 library(vegan)
-
-soilspca = prcomp(soils4multi, retx = TRUE, center = TRUE, scale. = TRUE)
-biplot(soilspca)
-
 library(dplyr)
 library(ggplot2)
 library(ggfortify)
 library("wesanderson")
 
-pal <- wes_palette("Darjeeling2",3, type = "discrete")
+# soilspca = prcomp(soils4multi, retx = TRUE, center = TRUE, scale. = TRUE)
+# biplot(soilspca)
 
-graphy <-autoplot(soilspca, data = completeset, shape= 'region', colour= 'transect_location',
-  size=2,
-  loadings = TRUE, loadings.colour = 'black',
-  loadings.label = TRUE, loadings.label.size = 2)+
-  scale_colour_manual(values = pal) + 
-  cowplot::theme_cowplot()
+soilsnmds = metaMDS(soils4multi, distance="bray", 
+          k = 3,
+          maxit = 999, 
+          trymax = 500,
+          wascores = TRUE)
 
-print(graphy)
+transpal = c("#056009","#8E7941","#021677")
+
+regionloc <- completeset %>% select(transect_location, region)
+
+env1 <- envfit(soilsnmds, regionloc, permu = 999)
+
+ordiplot (soilsnmds, display = 'si', type = 'n')
+points (soilsnmds, col = alpha(transpal, 0.5), pch = 19)
+ordiellipse(soilsnmds, groups=completeset$transect_location, col=c("#056009","#8E7941","#021677"))
+#plot(env1, p.max = 0.05, label=FALSE)
+
+
+# soilsnmds %>% ordiplot(type='points') %>% points(col=c("#8E7941","#DCCD6A","#27220F")) %>% ordiellipse(groups=completeset$transect_location, col=c("#8E7941","#DCCD6A","#27220F"),label = TRUE)
+
+
+#wetland = "#021677
+#transition = "#056009"
+#upland = "#8E7941"
+
+# pal <- wes_palette("Darjeeling2",3, type = "discrete")
+# 
+# graphy <-autoplot(soilspca, data = completeset, shape= 'region', colour= 'transect_location',
+#   size=2,
+#   loadings = TRUE, loadings.colour = 'black',
+#   loadings.label = TRUE, loadings.label.size = 2)+
+#   scale_colour_manual(values = pal) + 
+#   cowplot::theme_cowplot()
+# 
+# print(graphy)
 
 ```
 
