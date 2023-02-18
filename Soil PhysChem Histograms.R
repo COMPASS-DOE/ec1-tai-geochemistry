@@ -1,5 +1,11 @@
+#Creating Dataframe 
 phys_chem <- soils_data_foralex %>%
-  select("kit_id", "gwc_perc","bulk_density_g_cm3", "specific_conductance_us_cm", "loi_perc", "transect_location", "region")
+  select("kit_id", "gwc_perc","bulk_density_g_cm3", "specific_conductance_us_cm", "loi_perc", "transect_location", "region") %>%
+  mutate(transect_location_factor=factor(transect_location,levels=c("Wetland", "Transition", "Upland")),
+         region_factor=factor(region, levels=c("Chesapeake Bay", "Great Lakes")))
+
+
+#----------------------------------------Histograms--------------------------------------------------------------------------
 
 #Histogram for GWC with mean - non-normal distribution
 phys_chem %>% ggplot(aes(x = gwc_perc))+
@@ -25,18 +31,43 @@ phys_chem %>% ggplot(aes(x = loi_perc))+
   geom_vline(aes(xintercept=mean(loi_perc, na.rm=T)), color="red", linetype="dashed", size=1)+
   geom_density()
 
+#------------------------------------------------Box Plots------------------------------------------------------------------
 
-#Box plot for GWC vs Transect
-qplot(data=phys_chem,x = transect_location, y = gwc_perc, fill=transect_location,geom = "boxplot")+
-  geom_jitter()
+#Box plot for GWC vs Transect 
+qplot(data=phys_chem,x = transect_location_factor, y = gwc_perc, fill=transect_location,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Transect Location")+ylab("Graviemtric Water Content (%)")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
 
 #Box plot for BD vs Transect
-qplot(data=phys_chem,x = transect_location, y = bulk_density_g_cm3, fill=transect_location,geom = "boxplot")+
-  geom_jitter()
+qplot(data=phys_chem,x = transect_location_factor, y = bulk_density_g_cm3, fill=transect_location,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Transect Location")+ylab("Bulk Density (g/cm3)")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
 
 #Box plot for LOI vs Transect
-qplot(data=phys_chem,x = transect_location, y = loi_perc, fill=transect_location,geom = "boxplot")+
-  geom_jitter()
+qplot(data=phys_chem,x = transect_location_factor, y = loi_perc, fill=transect_location,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Transect Location")+ylab("Loss-On-Ignition (%)")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
+
+#--------------------------------Box Plot By Region---------------------------------------------------------------------------------------
+
+#Box plot for BD vs Transect
+qplot(data=phys_chem,x = region_factor, y = bulk_density_g_cm3, fill=region,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Region")+ylab("Bulk Density (g/cm3)")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
+
+
 
 #Box plot for SC vs Region
 qplot(data=phys_chem,x = region, y = specific_conductance_us_cm, fill=region,geom = "boxplot")+
@@ -48,6 +79,8 @@ qplot(interaction(gwc_perc,bulk_density_g_cm3),transect_location,data=phys_chem,
 
 #Box plot distributions by transect and region but the scaling is all jacked up
 ggboxplot(phys_chem, x = "gwc_perc", y = "bulk_density_g_cm3",  color = "transect_location", palette = c("red", "black","blue"), facet.by = "region")
+
+#------------------------------------------Facet Graphs------------------------------------------------------------------------
 
 ##trying the box plot facet with Allison's code for BD
 phys_chem %>% ggplot(aes(x = transect_location, y = bulk_density_g_cm3))+
@@ -77,22 +110,40 @@ phys_chem %>% ggplot(aes(x = transect_location, y = loi_perc))+
   labs(x = "",
        y = "Loss On Ignition (%)")
 
-##ANOVA
+##ANOVA - using anova function instead of aov 
 phys_chem$transect_location <- as.factor(phys_chem$transect_location)
 anova(lm(gwc_perc ~ phys_chem$transect_location, phys_chem))
 
-
-##AOV instead of ANOVA for GWC and Transect Location
-aov_gwc<- aov(gwc_perc ~ transect_location, data = phys_chem)  
+#------------------------------------------------AOV for GWC---------------------------------------------------------------------
+##AOV for GWC and Transect Location
+aov_gwc<- aov(gwc_perc ~ transect_location_factor, data = phys_chem)  
 summary.aov(aov_gwc)
 Tukey_gwc <-TukeyHSD(aov_gwc, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
 print(Tukey_gwc)
 
 ##trying to plot Tukey results on box plot 
-multcompBoxplot(formula = gwc_perc ~ transect_location,
-  data = phys_chem,
-  horizontal = TRUE,
-  compFn = "TukeyHSD")
+tukey <- glht(aov_gwc, linfct=mcp(transect_location_factor="Tukey"))
+cld(tukey)
+
+#---------------------------------------------AOV for BD------------------------------------------------------------------------
+
+##AOV for BD and Transect Location
+aov_bd<- aov(bulk_density_g_cm3 ~ transect_location_factor, data = phys_chem)  
+summary.aov(aov_bd)
+Tukey_bd <-TukeyHSD(aov_bd, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_bd)
+tukey <- glht(aov_bd, linfct=mcp(transect_location_factor="Tukey"))
+cld(tukey)
+
+#------------------------------------------------AOV for LOI---------------------------------------------------------------------
+
+##AOV for LOI and Transect Location
+aov_loi<- aov(loi_perc ~ transect_location_factor, data = phys_chem)  
+summary.aov(aov_loi)
+Tukey_loi <-TukeyHSD(aov_loi, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_loi)
+tukey <- glht(aov_loi, linfct=mcp(transect_location_factor="Tukey"))
+cld(tukey)
 
 
 
