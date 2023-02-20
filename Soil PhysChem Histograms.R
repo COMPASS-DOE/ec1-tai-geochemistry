@@ -65,7 +65,7 @@ qplot(data=phys_chem,x = transect_location_factor, y = loi_perc, fill=transect_l
 
 #--------------------------------Box Plot By Region---------------------------------------------------------------------------------------
 
-#Box plot for BD vs Transect
+#Box plot for BD vs Region
 qplot(data=phys_chem,x = region_factor, y = bulk_density_g_cm3, fill=region,geom = "boxplot")+
   geom_jitter()+
   xlab("Region")+ylab("Bulk Density (g/cm3)")+
@@ -73,11 +73,21 @@ qplot(data=phys_chem,x = region_factor, y = bulk_density_g_cm3, fill=region,geom
   theme_bw()+
   theme(legend.position = "none",panel.background = element_blank())
 
-
-
 #Box plot for SC vs Region
 qplot(data=phys_chem,x = region, y = specific_conductance_us_cm, fill=region,geom = "boxplot")+
-  geom_jitter()
+  geom_jitter()+
+  xlab("Region")+ylab("Specific Conductance (us cm)")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
+
+#Box plot for LOI vs Region 
+qplot(data=phys_chem,x = region, y = loi_perc, fill=region,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Region")+ylab("Loss On Ignition (%)")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
 
 #Box plot for GWC vs BD by Transect
 qplot(interaction(gwc_perc,bulk_density_g_cm3),transect_location,data=phys_chem, fill=transect_location,geom = "boxplot")+
