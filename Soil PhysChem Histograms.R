@@ -89,6 +89,14 @@ qplot(data=phys_chem,x = region, y = loi_perc, fill=region,geom = "boxplot")+
   theme_bw()+
   theme(legend.position = "none",panel.background = element_blank())
 
+#Box plot for GWC vs Region 
+qplot(data=phys_chem,x = region, y = gwc_perc, fill=region,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Region")+ylab("Gravimetric Water Content (%)")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
+
 #Box plot for GWC vs BD by Transect
 qplot(interaction(gwc_perc,bulk_density_g_cm3),transect_location,data=phys_chem, fill=transect_location,geom = "boxplot")+
   geom_jitter()
@@ -130,7 +138,7 @@ phys_chem %>% ggplot(aes(x = transect_location, y = loi_perc))+
 phys_chem$transect_location <- as.factor(phys_chem$transect_location)
 anova(lm(gwc_perc ~ phys_chem$transect_location, phys_chem))
 
-#------------------------------------------------AOV for GWC---------------------------------------------------------------------
+#------------------------------------------------AOV for GWC and Transect---------------------------------------------------------------------
 ##AOV for GWC and Transect Location
 aov_gwc<- aov(gwc_perc ~ transect_location_factor, data = phys_chem)  
 summary.aov(aov_gwc)
@@ -141,7 +149,7 @@ print(Tukey_gwc)
 tukey <- glht(aov_gwc, linfct=mcp(transect_location_factor="Tukey"))
 cld(tukey)
 
-#---------------------------------------------AOV for BD------------------------------------------------------------------------
+#---------------------------------------------AOV for BD and Transect------------------------------------------------------------------------
 
 ##AOV for BD and Transect Location
 aov_bd<- aov(bulk_density_g_cm3 ~ transect_location_factor, data = phys_chem)  
@@ -151,7 +159,7 @@ print(Tukey_bd)
 tukey <- glht(aov_bd, linfct=mcp(transect_location_factor="Tukey"))
 cld(tukey)
 
-#------------------------------------------------AOV for LOI---------------------------------------------------------------------
+#------------------------------------------------AOV for LOI and Transect---------------------------------------------------------------------
 
 ##AOV for LOI and Transect Location
 aov_loi<- aov(loi_perc ~ transect_location_factor, data = phys_chem)  
@@ -161,5 +169,30 @@ print(Tukey_loi)
 tukey <- glht(aov_loi, linfct=mcp(transect_location_factor="Tukey"))
 cld(tukey)
 
+#---------------------------------------------AOV for BD and Region---------------------------------------------------
+
+aov_bd2<- aov(bulk_density_g_cm3 ~ region_factor, data = phys_chem)  
+summary.aov(aov_bd2)
+Tukey_bd2 <-TukeyHSD(aov_bd2, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_bd2)
+tukey <- glht(aov_bd2, linfct=mcp(region_factor="Tukey"))
+cld(tukey)
+
+#-----------------------------------------AOV for LOI and Region-------------------------------------------------------
+
+aov_loi2<- aov(loi_perc ~ region_factor, data = phys_chem)  
+summary.aov(aov_loi2)
+Tukey_loi2 <-TukeyHSD(aov_loi2, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_loi2)
+tukey <- glht(aov_loi2, linfct=mcp(region_factor="Tukey"))
+cld(tukey)
 
 
+#---------------------------------------------AOV for GWC and Region---------------------------------------------------
+
+aov_gwc2<- aov(gwc_perc ~ region_factor, data = phys_chem)  
+summary.aov(aov_gwc2)
+Tukey_gwc2 <-TukeyHSD(aov_gwc2, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_gwc2)
+tukey <- glht(aov_gwc2, linfct=mcp(region_factor="Tukey"))
+cld(tukey)
