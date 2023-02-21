@@ -196,4 +196,25 @@ saveRDS(soils_data_all, "./soils_data_merged.rds")
 saveRDS(soils_data_all_wmeta_vis, "./soils_data_merged_withmeta.rds")
 ```
 
+LOI missing datasets 
 ```{r LOI sass, echo=FALSE}
+
+sample_mass <- visual_clean %>%
+  select(kit_id, transect_location, sample_weight_g)
+
+LOI_data <- soils_data_all %>%
+  select(kit_id, transect_location, loi_perc)
+
+LOI_TC_data <- soils_data_all %>%
+  select(kit_id, transect_location, loi_perc, tc_perc) %>%
+  mutate(LOI_TC_ratio = loi_perc/tc_perc,
+         STC = (0.441 * loi_perc)+56 )
+
+
+LOI_missing <- full_join(sample_mass, LOI_data, by= c("kit_id", "transect_location"))
+
+LOI_missing1 <- LOI_missing %>% filter(is.na(loi_perc))
+
+write_csv(LOI_missing1, "./LOI_soils_withNAs.csv")
+
+```
