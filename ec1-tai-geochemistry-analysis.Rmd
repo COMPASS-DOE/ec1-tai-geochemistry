@@ -20,7 +20,7 @@ soilparty = readRDS("./soils_data_merged_withmeta.rds")
 Getting together only the samples that have a complete dataset 
 ```{r data, echo=FALSE}
 completeset = soilparty %>% filter(collected == TRUE) %>%
-    select(campaign, kit_id, transect_location, loi_perc, bulk_density_g_cm3, gwc_perc, tn_perc, tc_perc, specific_conductance_us_cm, ph, region, percent_clay, percent_sand, plant_litter, visible_minerals, sample_weight_g) %>% select(!ends_with("_flag")) %>% na.omit()
+    select(campaign, kit_id, transect_location, loi_perc, bulk_density_g_cm3, gwc_perc, tn_perc, tc_perc, specific_conductance_us_cm, ph, gwc_perc, region, percent_clay, percent_sand, plant_litter, visible_minerals, sample_weight_g) %>% select(!ends_with("_flag")) %>% na.omit()
 
 saveRDS(completeset, "./soils_data_foralex.rds")
 ```
