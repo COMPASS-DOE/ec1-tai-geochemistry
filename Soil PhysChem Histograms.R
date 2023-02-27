@@ -9,7 +9,8 @@ soils_data_foralex <- readRDS("~/GitHub/ec1-tai-geochemistry/soils_data_foralex.
 #Creating Dataframe 
 phys_chem <- soils_data_foralex %>%
   mutate(transect_location_factor=factor(transect_location,levels=c("Wetland", "Transition", "Upland")),
-         region_factor=factor(region, levels=c("Chesapeake Bay", "Great Lakes"))) %>%
+         region_factor=factor(region, levels=c("Chesapeake Bay", "Great Lakes")),
+         region_factor= stringr::str_replace_all(region_factor, pattern = "Chesapeake Bay", replacement = "Mid-Atlantic")) %>%
   dplyr::select(kit_id, gwc_perc,bulk_density_g_cm3, specific_conductance_us_cm, loi_perc, transect_location, region, transect_location_factor, region_factor)
 
 
@@ -46,6 +47,14 @@ qplot(data=phys_chem,x = transect_location_factor, y = gwc_perc, fill=transect_l
   geom_jitter()+
   xlab("Transect Location")+ylab("Graviemtric Water Content (%)")+
   scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
+
+#Box plot for GWC vs Region
+qplot(data=phys_chem,x = region_factor, y = gwc_perc, fill=region ,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Region")+ylab("Graviemtric Water Content (%)")+
+  scale_fill_manual(values=wesanderson::wes_palette("Darjeeling2"))+
   theme_bw()+
   theme(legend.position = "none",panel.background = element_blank())
 
