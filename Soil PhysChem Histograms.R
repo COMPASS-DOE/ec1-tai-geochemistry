@@ -1,7 +1,9 @@
+##Loading packages 
 library(tidyverse)
 library(ggplot2)
 library(multcomp)
 
+#Loading Data 
 soils_data_foralex <- readRDS("~/GitHub/ec1-tai-geochemistry/soils_data_foralex.rds")
 
 #Creating Dataframe 
@@ -37,7 +39,7 @@ phys_chem %>% ggplot(aes(x = loi_perc))+
   geom_vline(aes(xintercept=mean(loi_perc, na.rm=T)), color="red", linetype="dashed", size=1)+
   geom_density()
 
-#------------------------------------------------Box Plots------------------------------------------------------------------
+#------------------------------------------------Box Plots by Transect------------------------------------------------------------------
 
 #Box plot for GWC vs Transect 
 qplot(data=phys_chem,x = transect_location_factor, y = gwc_perc, fill=transect_location,geom = "boxplot")+
@@ -97,13 +99,6 @@ qplot(data=phys_chem,x = region, y = gwc_perc, fill=region,geom = "boxplot")+
   theme_bw()+
   theme(legend.position = "none",panel.background = element_blank())
 
-#Box plot for GWC vs BD by Transect
-qplot(interaction(gwc_perc,bulk_density_g_cm3),transect_location,data=phys_chem, fill=transect_location,geom = "boxplot")+
-  geom_jitter()
-
-#Box plot distributions by transect and region but the scaling is all jacked up
-ggboxplot(phys_chem, x = "gwc_perc", y = "bulk_density_g_cm3",  color = "transect_location", palette = c("red", "black","blue"), facet.by = "region")
-
 #------------------------------------------Facet Graphs------------------------------------------------------------------------
 
 ##trying the box plot facet with Allison's code for BD
@@ -134,10 +129,13 @@ phys_chem %>% ggplot(aes(x = transect_location, y = loi_perc))+
   labs(x = "",
        y = "Loss On Ignition (%)")
 
-##ANOVA - using anova function instead of aov 
+##ANOVA - using the anova function, learned this way from stackexchange 
 phys_chem$transect_location <- as.factor(phys_chem$transect_location)
 anova(lm(gwc_perc ~ phys_chem$transect_location, phys_chem))
 
+
+
+## Learning ANOVA from Allison using aov instead of anova 
 #------------------------------------------------AOV for GWC and Transect---------------------------------------------------------------------
 ##AOV for GWC and Transect Location
 aov_gwc<- aov(gwc_perc ~ transect_location_factor, data = phys_chem)  
