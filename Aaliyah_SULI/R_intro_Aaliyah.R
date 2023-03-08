@@ -64,7 +64,7 @@ p_load(tidyverse, # Contains many different tidy packages, including ggplot2 for
 ## First, set the path where data is (it's a URL in this case)
 loi_path <- "https://docs.google.com/spreadsheets/d/1Osig5zxzW3l9z_1Bb0zNW2tfTdJ60hsh78qMvjgclQE/edit#gid=0"
 
-loi_path2 <- "C:/Users/hame295/Downloads/loi_for_aaliyah.csv"
+loi_path2 <- "/Users/homo761/Library/CloudStorage/OneDrive-PNNL/Documents/R/EC1/Gravimetric_water_and_LOI - Sheet1.csv"
 
 #R likes having csv files vs xcl files because it can read them more easily
 ## Second, read data in to the R environment
@@ -128,7 +128,7 @@ loi_subset2 <- loi_subset %>%
 mutate(loi = as.numeric(str_replace_all(loi, "%", ""))) 
 
 ## Let's make a plot where we look at how gwc and loi relate
-ggplot(data = loi_subset2, aes(x = gwc, y = loi)) + 
+ggplot(data = loi_raw, aes(x = gwc, y = loi)) + 
   geom_point()
 
 ## ggplot is how you plot in tidyverse, plot is how you plot in R data is 
@@ -157,7 +157,7 @@ ggplot(data = loi_subset2, aes(x = gwc, y = loi)) +
 ggplot(data = loi_subset2, aes(x = gwc, y = loi)) + 
   geom_point(size = 3, alpha = 0.5) + 
   geom_point(aes(color = transect_location), size = 2, alpha = 0.6) + 
-  labs(x = "Gravimetric water content (%)", y = "Loss on ignition (%)") +
+  labs(x = "Gravimetric Water Content (%)", y = "Loss on Ignition (%)") +
   theme_bw()
 
 ##  when in doubt google it out! swirl stat can help!
