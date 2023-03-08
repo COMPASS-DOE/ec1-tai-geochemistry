@@ -11,7 +11,7 @@ phys_chem <- soils_data_foralex %>%
   mutate(transect_location_factor=factor(transect_location,levels=c("Wetland", "Transition", "Upland")),
          region_factor=factor(region, levels=c("Chesapeake Bay", "Great Lakes")),
          region_factor= stringr::str_replace_all(region_factor, pattern = "Chesapeake Bay", replacement = "Mid-Atlantic")) %>%
-  dplyr::select(kit_id, gwc_perc,bulk_density_g_cm3, specific_conductance_us_cm, loi_perc, transect_location, region, transect_location_factor, region_factor)
+  dplyr::select(kit_id, gwc_perc,bulk_density_g_cm3, specific_conductance_us_cm, loi_perc, transect_location, region, transect_location_factor, region_factor, ph, tc_perc, tn_perc)
 
 
 #----------------------------------------Histograms--------------------------------------------------------------------------
@@ -198,6 +198,66 @@ cld(tukey)
 #---------------------------------------------AOV for GWC and Region---------------------------------------------------
 
 aov_gwc2<- aov(gwc_perc ~ region_factor, data = phys_chem)  
+summary.aov(aov_gwc2)
+Tukey_gwc2 <-TukeyHSD(aov_gwc2, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_gwc2)
+tukey <- glht(aov_gwc2, linfct=mcp(region_factor="Tukey"))
+cld(tukey)
+
+#--------------------------------Learning 2-way ANOVA with Allison----------------------------------------------------
+
+aov_gwc2<- aov(gwc_perc ~ region_factor*transect_location_factor, data = phys_chem) #add a * between variables to look at the interactions between them   
+summary.aov(aov_gwc2)
+Tukey_gwc2 <-TukeyHSD(aov_gwc2, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_gwc2)
+tukey <- glht(aov_gwc2, linfct=mcp(region_factor="Tukey"))
+cld(tukey)
+
+aov_loi_perc<- aov(loi_perc ~ region_factor*transect_location_factor, data = phys_chem)  
+summary.aov(aov_loi_perc)
+Tukey_loi_perc <-TukeyHSD(aov_loi_perc, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_loi_perc)
+tukey <- glht(aov_loi_perc, linfct=mcp(region_factor="Tukey"))
+cld(tukey)
+
+aov_bulk_density_g_cm3<- aov(bulk_density_g_cm3 ~ region_factor*transect_location_factor, data = phys_chem)  
+summary.aov(aov_bulk_density_g_cm3)
+Tukey_bulk_density_g_cm3 <-TukeyHSD(aov_bulk_density_g_cm3, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_bulk_density_g_cm3)
+tukey <- glht(aov_bulk_density_g_cm3, linfct=mcp(region_factor="Tukey"))
+cld(tukey)
+
+aov_tc_perc <- aov(tc_perc ~ region_factor*transect_location_factor, data = phys_chem)  
+summary.aov(aov_tc_perc )
+Tukey_tc_perc  <-TukeyHSD(aov_tc_perc , conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_tc_perc )
+tukey <- glht(aov_tc_perc , linfct=mcp(region_factor="Tukey"))
+cld(tukey)
+
+aov_tn_perc <- aov(tn_perc ~ region_factor*transect_location_factor, data = phys_chem)  
+summary.aov(aov_tn_perc )
+Tukey_tn_perc  <-TukeyHSD(aov_tn_perc , conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_tn_perc )
+tukey <- glht(aov_tn_perc , linfct=mcp(region_factor="Tukey"))
+cld(tukey)
+
+aov_ph <- aov(ph ~ region_factor*transect_location_factor, data = phys_chem)  
+summary.aov(aov_ph )
+Tukey_ph  <-TukeyHSD(aov_ph , conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_ph )
+tukey <- glht(aov_ph , linfct=mcp(region_factor="Tukey"))
+cld(tukey)
+
+aov_specific_conductance_us_cm <- aov(specific_conductance_us_cm ~ region_factor*transect_location_factor, data = phys_chem)  
+summary.aov(aov_specific_conductance_us_cm )
+Tukey_specific_conductance_us_cm  <-TukeyHSD(aov_specific_conductance_us_cm , conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_specific_conductance_us_cm )
+tukey <- glht(aov_specific_conductance_us_cm , linfct=mcp(region_factor="Tukey"))
+cld(tukey)
+
+#Trying a Factoral ANOVA
+#the interaction between loi and gwc is most different from upland to wetland 
+aov_gwc2<- aov(gwc_perc+loi_perc ~ region_factor*transect_location_factor, data = phys_chem) #add a * between variables to look at the interactions between them   
 summary.aov(aov_gwc2)
 Tukey_gwc2 <-TukeyHSD(aov_gwc2, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
 print(Tukey_gwc2)
