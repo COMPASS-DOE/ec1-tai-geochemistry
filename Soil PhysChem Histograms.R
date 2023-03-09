@@ -74,6 +74,30 @@ qplot(data=phys_chem,x = transect_location_factor, y = loi_perc, fill=transect_l
   theme_bw()+
   theme(legend.position = "none",panel.background = element_blank())
 
+#Box Plot for pH vs Transect 
+qplot(data=phys_chem,x = transect_location_factor, y = ph, fill=transect_location,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Transect Location")+ylab("pH")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
+
+#Box plot for TC vs Transect
+qplot(data=phys_chem,x = transect_location_factor, y = tc_perc, fill=transect_location,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Transect Location")+ylab("Total Carbon (%)")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
+
+#Box plot for TN vs Transect
+qplot(data=phys_chem,x = transect_location_factor, y = tn_perc, fill=transect_location,geom = "boxplot")+
+  geom_jitter()+
+  xlab("Transect Location")+ylab("Total Nitrogen (%)")+
+  scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
+  theme_bw()+
+  theme(legend.position = "none",panel.background = element_blank())
+
 #--------------------------------Box Plot By Region---------------------------------------------------------------------------------------
 
 #Box plot for BD vs Region
