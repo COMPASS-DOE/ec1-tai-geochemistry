@@ -46,7 +46,7 @@ pacman::p_load(tidyverse, # keep things tidy
                readxl) # read in excel files
 
 ## Set GDrive URL raw data files
-directory = "https://drive.google.com/drive/u/1/folders/1r3sP7tvhG2btZACvxZUdtrtSiLVGUUGp"
+directory = "https://drive.google.com/drive/u/0/folders/18RvjGav1OfZA8Ocdm9De7aKRaFLRrRTd"
 KitMetadata = "https://drive.google.com/file/d/1auYnbc16eg6Dg6AzUJ_DNP5UOd2H-7Kl/view?usp=sharing"
 
 ## Create a list of files to download
@@ -63,8 +63,7 @@ soils_data_all <- files$name %>%
   mutate(kit_id = str_trim(kit_id, side = c("both", "left", "right")),
          transect_location = str_trim(transect_location, side = c("both", "left", "right")),
          campaign = str_trim(campaign, side = c("both", "left", "right"))) %>%
-  bind_cols() %>%
-  select(-visible_minerals)
+  bind_cols() 
 
 #Metadata 
 KitMD = googledrive::drive_download(KitMetadata, overwrite = TRUE)
@@ -90,9 +89,13 @@ metadata_file <- drive_ls(metadata_directory) %>%
   pull(name)
 
 
+metadata_file_2 <- drive_ls(metadata_directory) %>%
+  filter(grepl("Metadata_CollectionLevel", name)) %>%
+  pull(name)
 
 ## Now download that file to your local (an annoying googledrive requirement)
 drive_download(metadata_file, overwrite = T)
+drive_download(metadata_file_2, overwrite = T)
 
 
 
@@ -106,7 +109,10 @@ metadata_collected <- read_csv(metadata_file) %>%
   pivot_longer(cols = c(Sediment, Wetland, Transition, Upland),
                names_to = "transect_location", values_to = "collected")
 
-saveRDS(metadata_collected, "./soils_data_collected_samples_list.rds")
+metadata_collected_2 <- read_csv(metadata_file_2) %>%
+  pivot_longer(cols= -kit_id, names_pattern = "[:alpha:](?=_)", names_to = "transect_location")
+
+#saveRDS(metadata_collected, "./soils_data_collected_samples_list.rds")
 
 ```
 
