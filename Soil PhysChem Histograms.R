@@ -170,6 +170,7 @@ anova(lm(gwc_perc ~ phys_chem$transect_location, phys_chem))
 
 ## Learning ANOVA from Allison using aov instead of anova 
 #------------------------------------------------AOV for GWC and Transect---------------------------------------------------------------------
+
 ##AOV for GWC and Transect Location
 aov_gwc<- aov(gwc_perc ~ transect_location_factor, data = phys_chem)  
 summary.aov(aov_gwc)
@@ -200,6 +201,33 @@ print(Tukey_loi)
 tukey <- glht(aov_loi, linfct=mcp(transect_location_factor="Tukey"))
 cld(tukey)
 
+#--------------------------------------------AOV for pH and Transect--------------------------------------------------------------------------
+
+aov_ph<- aov(ph ~ transect_location_factor, data = phys_chem)  
+summary.aov(aov_ph)
+Tukey_ph <-TukeyHSD(aov_ph, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_ph)
+tukey <- glht(aov_ph, linfct=mcp(transect_location_factor="Tukey"))
+cld(tukey)
+
+#-------------------------------------------AOV for TC and Transect---------------------------------------------------------------------------
+
+aov_tc_perc<- aov(tc_perc ~ transect_location_factor, data = phys_chem)  
+summary.aov(aov_tc_perc)
+Tukey_tc_perc <-TukeyHSD(aov_tc_perc, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_tc_perc)
+tukey <- glht(aov_tc_perc, linfct=mcp(transect_location_factor="Tukey"))
+cld(tukey)
+
+#-----------------------------------------AOV for TN and Transect----------------------------------------------------------------------------
+
+aov_tn_perc<- aov(tn_perc ~ transect_location_factor, data = phys_chem)  
+summary.aov(aov_tn_perc)
+Tukey_tn_perc <-TukeyHSD(aov_tn_perc, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_tn_perc)
+tukey <- glht(aov_tn_perc, linfct=mcp(transect_location_factor="Tukey"))
+cld(tukey)
+
 #---------------------------------------------AOV for BD and Region---------------------------------------------------
 
 aov_bd2<- aov(bulk_density_g_cm3 ~ region_factor, data = phys_chem)  
@@ -217,7 +245,6 @@ Tukey_loi2 <-TukeyHSD(aov_loi2, conf.level = 0.95) #running ad-hoc Tukey test to
 print(Tukey_loi2)
 tukey <- glht(aov_loi2, linfct=mcp(region_factor="Tukey"))
 cld(tukey)
-
 
 #---------------------------------------------AOV for GWC and Region---------------------------------------------------
 
@@ -279,7 +306,7 @@ print(Tukey_specific_conductance_us_cm )
 tukey <- glht(aov_specific_conductance_us_cm , linfct=mcp(region_factor="Tukey"))
 cld(tukey)
 
-#Trying a Factoral ANOVA
+##Trying a Factoral ANOVA
 #the interaction between loi and gwc is most different from upland to wetland 
 aov_gwc2<- aov(gwc_perc+loi_perc ~ region_factor*transect_location_factor, data = phys_chem) #add a * between variables to look at the interactions between them   
 summary.aov(aov_gwc2)
