@@ -47,7 +47,7 @@ qplot(data=phys_chem,x = transect_location_factor, y = gwc_perc, fill=transect_l
   geom_jitter()+
   xlab("Transect Location")+ylab("Graviemtric Water Content (%)")+
   scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
-  theme_bw()+
+  theme_bw(base_size = 18)+
   theme(legend.position = "none",panel.background = element_blank())
 
 #Box plot for GWC vs Region
@@ -63,7 +63,7 @@ qplot(data=phys_chem,x = transect_location_factor, y = bulk_density_g_cm3, fill=
   geom_jitter()+
   xlab("Transect Location")+ylab("Bulk Density (g/cm3)")+
   scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
-  theme_bw()+
+  theme_bw(base_size = 18)+
   theme(legend.position = "none",panel.background = element_blank())
 
 #Box plot for LOI vs Transect
@@ -79,7 +79,7 @@ qplot(data=phys_chem,x = transect_location_factor, y = ph, fill=transect_locatio
   geom_jitter()+
   xlab("Transect Location")+ylab("pH")+
   scale_fill_manual(values=c("#056009","#8E7941","#021677"))+
-  theme_bw()+
+  theme_bw(base_size = 18)+
   theme(legend.position = "none",panel.background = element_blank())
 
 #Box plot for TC vs Transect
@@ -191,6 +191,16 @@ print(Tukey_bd)
 tukey <- glht(aov_bd, linfct=mcp(transect_location_factor="Tukey"))
 cld(tukey)
 
+#----------------------------------------------AOV for SC and Transect------------------------------------------------------------------------
+
+##AOV for SC and Transect Location
+aov_sc<- aov(specific_conductance_us_cm ~ transect_location_factor, data = phys_chem)  
+summary.aov(aov_sc)
+Tukey_sc <-TukeyHSD(aov_sc, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_sc)
+tukey <- glht(aov_sc, linfct=mcp(transect_location_factor="Tukey"))
+cld(tukey)
+
 #------------------------------------------------AOV for LOI and Transect---------------------------------------------------------------------
 
 ##AOV for LOI and Transect Location
@@ -256,6 +266,7 @@ tukey <- glht(aov_gwc2, linfct=mcp(region_factor="Tukey"))
 cld(tukey)
 
 #--------------------------------Learning 2-way ANOVA with Allison----------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------
 
 aov_gwc2<- aov(gwc_perc ~ region_factor*transect_location_factor, data = phys_chem) #add a * between variables to look at the interactions between them   
 summary.aov(aov_gwc2)
