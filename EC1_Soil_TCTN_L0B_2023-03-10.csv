@@ -1,0 +1,138 @@
+campaign,kit_id,transect_location,tc_perc,tn_perc,tc_flag,tn_flag
+EC1,K001,transition,7.378,0.532,replicate outlier,replicate outlier
+EC1,K001,upland,NA,0.22,no replicates used,< 3 replicates used
+EC1,K001,wetland,6.582,0.673,< 3 replicates used,< 3 replicates used
+EC1,K004,transition,7.091,0.751,"< 3 replicates used, replicate outlier",NA
+EC1,K004,upland,4.293,0.434,NA,NA
+EC1,K004,wetland,6.744,0.672,NA,NA
+EC1,K007,transition,5.593,0.606,NA,NA
+EC1,K007,upland,NA,0.55,no replicates used,< 3 replicates used
+EC1,K007,wetland,6.037,0.749,< 3 replicates used,< 3 replicates used
+EC1,K008,transition,18.308,1.468,NA,NA
+EC1,K008,upland,3.014,0.296,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K008,wetland,6.624,0.51,NA,NA
+EC1,K009,transition,4.857,0.391,NA,NA
+EC1,K009,upland,4.279,0.405,NA,NA
+EC1,K009,wetland,8.834,0.777,< 3 replicates used,< 3 replicates used
+EC1,K010,transition,3.745,0.309,"< 3 replicates used, replicate outlier",NA
+EC1,K010,upland,3.845,0.39,"< 3 replicates used, replicate outlier",NA
+EC1,K010,wetland,5.057,0.462,< 3 replicates used,< 3 replicates used
+EC1,K011,transition,2.596,0.232,NA,NA
+EC1,K011,upland,3.199,0.279,NA,NA
+EC1,K011,wetland,5.822,0.629,NA,NA
+EC1,K012,wetland,4.629,0.523,NA,NA
+EC1,K013,transition,10.513,1.036,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K013,upland,NA,1.098,no replicates used,< 3 replicates used
+EC1,K013,wetland,21.55,1.884,"< 3 replicates used, replicate outlier",NA
+EC1,K014,wetland,2.587,0.257,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K015,transition,2.32,0.165,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K015,upland,NA,0.43,no replicates used,< 3 replicates used
+EC1,K015,wetland,6.37,0.545,< 3 replicates used,< 3 replicates used
+EC1,K016,transition,2.171,0.177,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K016,upland,28.385,1.289,"< 3 replicates used, replicate outlier",NA
+EC1,K016,wetland,4.729,0.505,"< 3 replicates used, replicate outlier",NA
+EC1,K017,transition,3.641,0.393,"< 3 replicates used, replicate outlier",NA
+EC1,K017,upland,NA,0.374,no replicates used,< 3 replicates used
+EC1,K017,wetland,6.671,0.663,< 3 replicates used,< 3 replicates used
+EC1,K018,transition,2.688,0.23,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K018,upland,10.495,1.424,NA,NA
+EC1,K018,wetland,1.043,0.086,< 3 replicates used,< 3 replicates used
+EC1,K019,transition,1.981,0.129,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K019,upland,7.341,0.633,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K019,wetland,0.628,0.034,< 3 replicates used,< 3 replicates used
+EC1,K020,upland,7.633,0.633,"< 3 replicates used, replicate outlier",NA
+EC1,K021,transition,11.458,1.104,NA,NA
+EC1,K021,upland,7.029,0.526,NA,NA
+EC1,K021,wetland,7.447,0.841,< 3 replicates used,< 3 replicates used
+EC1,K022,transition,24.205,2.714,"replicate below detect, replicate outlier",replicate outlier
+EC1,K022,upland,NA,0.714,no replicates used,< 3 replicates used
+EC1,K022,wetland,10.387,1.304,< 3 replicates used,< 3 replicates used
+EC1,K023,upland,17.678,1.596,"< 3 replicates used, replicate outlier",NA
+EC1,K023,wetland,15.874,1.419,"< 3 replicates used, replicate outlier",NA
+EC1,K024,transition,9.35,0.821,NA,NA
+EC1,K024,upland,NA,NA,no replicates used,no replicates used
+EC1,K024,wetland,18.033,1.338,< 3 replicates used,< 3 replicates used
+EC1,K025,transition,7.78,0.645,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K025,upland,5.731,0.395,NA,NA
+EC1,K025,wetland,3.587,0.34,NA,NA
+EC1,K026,transition,12.052,1.119,"< 3 replicates used, replicate outlier",NA
+EC1,K026,upland,NA,NA,no replicates used,no replicates used
+EC1,K026,wetland,3.342,0.309,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K029,transition,18.914,1.499,NA,NA
+EC1,K029,upland,19.596,0.999,"< 3 replicates used, replicate outlier",NA
+EC1,K029,wetland,4.932,0.554,< 3 replicates used,< 3 replicates used
+EC1,K030,upland,24.207,1.441,"< 3 replicates used, replicate outlier",NA
+EC1,K030,wetland,4.579,0.507,"< 3 replicates used, replicate outlier",NA
+EC1,K033,upland,NA,NA,no replicates used,no replicates used
+EC1,K033,wetland,5.043,0.379,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K034,transition,9.397,0.925,NA,NA
+EC1,K034,upland,NA,NA,no replicates used,no replicates used
+EC1,K034,wetland,5.866,0.633,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K035,transition,9.179,0.974,NA,NA
+EC1,K035,upland,NA,0.528,no replicates used,< 3 replicates used
+EC1,K035,wetland,10.42,1.212,NA,NA
+EC1,K036,transition,14.431,1.404,NA,NA
+EC1,K036,upland,18.009,1.374,NA,NA
+EC1,K036,wetland,14.683,1.467,NA,NA
+EC1,K037,wetland,4.626,0.517,"< 3 replicates used, replicate outlier",NA
+EC1,K038,upland,NA,NA,no replicates used,no replicates used
+EC1,K038,wetland,9.382,0.847,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K039,transition,24.323,2.348,NA,NA
+EC1,K039,upland,3.474,0.208,NA,NA
+EC1,K039,wetland,34.594,2.573,NA,NA
+EC1,K040,transition,21.083,1.184,NA,NA
+EC1,K040,upland,32.999,0.863,"< 3 replicates used, replicate outlier",NA
+EC1,K040,wetland,2.359,0.2,"< 3 replicates used, replicate outlier",NA
+EC1,K041,transition,22.355,1.446,NA,NA
+EC1,K041,upland,NA,1.025,no replicates used,< 3 replicates used
+EC1,K041,wetland,1.583,0.1,< 3 replicates used,< 3 replicates used
+EC1,K042,transition,12.937,1.054,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K042,upland,NA,0.554,no replicates used,< 3 replicates used
+EC1,K042,wetland,7.02,0.687,< 3 replicates used,< 3 replicates used
+EC1,K044,transition,14.615,1.193,NA,NA
+EC1,K044,upland,22.084,1.075,< 3 replicates used,< 3 replicates used
+EC1,K044,wetland,4.769,0.509,< 3 replicates used,< 3 replicates used
+EC1,K045,transition,14.912,1.091,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K045,upland,30.094,1.379,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K045,wetland,8.432,0.856,< 3 replicates used,< 3 replicates used
+EC1,K046,transition,5.77,0.586,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K046,upland,10.22,0.872,NA,NA
+EC1,K047,transition,NA,NA,no replicates used,no replicates used
+EC1,K047,upland,18.108,1.212,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K047,wetland,24.756,1.987,< 3 replicates used,< 3 replicates used
+EC1,K048,transition,7.604,0.69,NA,NA
+EC1,K048,upland,4.156,0.405,NA,NA
+EC1,K048,wetland,5.887,0.536,< 3 replicates used,< 3 replicates used
+EC1,K049,transition,1.234,0.099,"< 3 replicates used, replicate outlier",NA
+EC1,K049,upland,0.362,0.005,"< 3 replicates used, replicate below detect, replicate outlier","< 3 replicates used, replicate below detect, replicate outlier"
+EC1,K049,wetland,1.267,0.112,< 3 replicates used,< 3 replicates used
+EC1,K050,transition,2.47,0.207,NA,NA
+EC1,K050,upland,27.688,1.157,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K050,wetland,6.822,0.675,< 3 replicates used,< 3 replicates used
+EC1,K051,transition,20.777,1.412,NA,NA
+EC1,K051,upland,NA,0.124,no replicates used,< 3 replicates used
+EC1,K051,wetland,1.975,0.196,< 3 replicates used,< 3 replicates used
+EC1,K052,transition,1.559,0.113,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K052,upland,NA,0.228,no replicates used,< 3 replicates used
+EC1,K053,transition,4.535,0.462,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K053,upland,5.165,0.51,NA,NA
+EC1,K053,wetland,7.878,0.973,< 3 replicates used,< 3 replicates used
+EC1,K054,transition,18.481,0.88,replicate outlier,replicate outlier
+EC1,K054,upland,NA,NA,no replicates used,no replicates used
+EC1,K054,wetland,12.758,0.951,< 3 replicates used,< 3 replicates used
+EC1,K055,upland,6.867,0.543,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K056,transition,3.971,0.399,"< 3 replicates used, replicate outlier",NA
+EC1,K056,upland,13.585,0.617,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K056,wetland,7.529,0.727,< 3 replicates used,< 3 replicates used
+EC1,K058,transition,11.857,1.085,"< 3 replicates used, replicate outlier",replicate outlier
+EC1,K058,upland,27.922,1.451,replicate outlier,replicate outlier
+EC1,K058,wetland,4.717,0.555,"< 3 replicates used, replicate outlier",NA
+EC1,K059,transition,18.433,1.315,replicate outlier,replicate outlier
+EC1,K059,upland,26.907,0.966,replicate outlier,NA
+EC1,K059,wetland,16.432,1.57,< 3 replicates used,< 3 replicates used
+EC1,K061,transition,2.048,0.163,"< 3 replicates used, replicate outlier",replicate outlier
+EC1,K061,upland,2.381,0.207,NA,NA
+EC1,K061,wetland,3.633,0.42,"< 3 replicates used, replicate outlier","< 3 replicates used, replicate outlier"
+EC1,K062,transition,6.872,0.463,NA,NA
+EC1,K062,upland,NA,NA,no replicates used,no replicates used
+EC1,K062,wetland,6.831,0.781,< 3 replicates used,< 3 replicates used

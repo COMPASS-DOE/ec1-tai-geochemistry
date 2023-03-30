@@ -17,10 +17,7 @@ Create Function to download data from google drive
 read_data <- function(data){
   # read in data
   read_csv(file = data) %>%
-  mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
-  mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
-  mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland")) %>%
-  mutate(transect_location = stringr::str_replace(transect_location,"sediment","Sediment"))  
+  mutate(transect_location = tolower(transect_location)) 
 }
 
 ```
@@ -46,12 +43,12 @@ pacman::p_load(tidyverse, # keep things tidy
                readxl) # read in excel files
 
 ## Set GDrive URL raw data files
-directory = "https://drive.google.com/drive/u/0/folders/18RvjGav1OfZA8Ocdm9De7aKRaFLRrRTd"
+directory = "https://drive.google.com/drive/folders/1y5a3l0IFp29ofLZC6LGy5E_WSgL5b3qy"
 KitMetadata = "https://drive.google.com/file/d/1auYnbc16eg6Dg6AzUJ_DNP5UOd2H-7Kl/view?usp=sharing"
 
 ## Create a list of files to download
 files <- drive_ls(directory) %>% 
-  filter(grepl("_Soil_", name))
+  filter(grepl("_soil_", name))
 
 ## Download files to local (don't worry, we'll delete em in a sec)
 lapply(files$name, drive_download, overwrite = TRUE)
@@ -81,16 +78,18 @@ Donnie_soils_type <- read_csv("data/220713_soil_types_from_donnie.csv", show_col
 ```{r missing}
 metadata_directory = "https://drive.google.com/drive/folders/1IQUq_sD-Jama7ajaZl1zW_9zlWfyCohn"
 
+updated_metadata_directory = "https://drive.google.com/drive/folders/1xy9nsTpbiSk-KXrcDEeFQ7gg4350DuH-"
+
 
 
 ## Next, list all files in the directory, filter out the Kit Level file and snag the file name
-metadata_file <- drive_ls(metadata_directory) %>%
-  filter(grepl("KitLevel", name)) %>%
+metadata_file <- drive_ls(updated_metadata_directory) %>%
+  filter(grepl("kitlevel", name)) %>%
   pull(name)
 
 
-metadata_file_2 <- drive_ls(metadata_directory) %>%
-  filter(grepl("Metadata_CollectionLevel", name)) %>%
+metadata_file_2 <- drive_ls(updated_metadata_directory) %>%
+  filter(grepl("collectedlevel", name)) %>%
   pull(name)
 
 ## Now download that file to your local (an annoying googledrive requirement)
@@ -102,15 +101,17 @@ drive_download(metadata_file_2, overwrite = T)
 ## Finally, read those data in and format so we can set up a list of all samples received
 metadata_collected <- read_csv(metadata_file) %>%
   select(kit_id, samples_collected) %>%
-  mutate(Sediment = ifelse(str_detect(samples_collected, "Sediment"), T, F),
-         Wetland = ifelse(str_detect(samples_collected, "Wetland"), T, F),
-         Transition = ifelse(str_detect(samples_collected, "Transition"), T, F),
-         Upland = ifelse(str_detect(samples_collected, "Upland"), T, F)) %>%
-  pivot_longer(cols = c(Sediment, Wetland, Transition, Upland),
+   mutate(sediment = ifelse(str_detect(samples_collected, "Sediment"), T, F),
+          wetland = ifelse(str_detect(samples_collected, "Wetland"), T, F),
+          transition = ifelse(str_detect(samples_collected, "Transition"), T, F),
+          upland = ifelse(str_detect(samples_collected, "Upland"), T, F)) %>%
+  pivot_longer(cols = c(sediment, wetland, transition, upland),
                names_to = "transect_location", values_to = "collected")
 
-metadata_collected_2 <- read_csv(metadata_file_2) %>%
-  pivot_longer(cols= -kit_id, names_pattern = "[:alpha:](?=_)", names_to = "transect_location")
+metadata_collected_2 <- read_csv(metadata_file_2)
+
+# %>%
+#   pivot_longer(cols= -kit_id, names_pattern = "[:alpha:](?=_)", names_to = "transect_location")
 
 #saveRDS(metadata_collected, "./soils_data_collected_samples_list.rds")
 
@@ -126,10 +127,10 @@ collection_metadata_soiltypes_raw_1 <-  Donnie_soils_type %>%
                names_to = 'transect_location') %>% 
   select(kit_id, transect_location, value) %>%
   rename(soil_horizon = value) %>%
-  mutate(transect_location = stringr::str_replace(transect_location,"_soil_horizon", "")) %>%
-    mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
-    mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
-    mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland"))  
+  mutate(transect_location = stringr::str_replace(transect_location,"_soil_horizon", "")) 
+    # mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
+    # mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
+    # mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland"))  
 
 collection_metadata_soiltypes_raw_2 <-  Donnie_soils_type %>%
    pivot_longer(cols = c(`wt_Percent clay`, `tr_Percent clay`, `up_Percent clay`),
@@ -137,9 +138,9 @@ collection_metadata_soiltypes_raw_2 <-  Donnie_soils_type %>%
   select(kit_id, transect_location, value) %>%
   rename(percent_clay = value) %>%
   mutate(transect_location = stringr::str_replace(transect_location,"_Percent clay", "")) %>%
-    mutate(transect_location = stringr::str_replace(transect_location,"up","Upland"))  %>%
-    mutate(transect_location = stringr::str_replace(transect_location,"tr","Transition"))  %>% 
-    mutate(transect_location = stringr::str_replace(transect_location,"wt","Wetland"))  
+    mutate(transect_location = stringr::str_replace(transect_location,"up","upland"))  %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"tr","transition"))  %>% 
+    mutate(transect_location = stringr::str_replace(transect_location,"wt","wetland"))  
 
 collection_metadata_soiltypes_raw_3 <-  Donnie_soils_type %>%
    pivot_longer(cols = c(`wt_Percent sand`, `tr_Percent sand`, `up_Percent sand`),
@@ -147,9 +148,9 @@ collection_metadata_soiltypes_raw_3 <-  Donnie_soils_type %>%
   select(kit_id, transect_location, value) %>%
   rename(percent_sand = value) %>%
   mutate(transect_location = stringr::str_replace(transect_location,"_Percent sand", "")) %>%
-    mutate(transect_location = stringr::str_replace(transect_location,"up","Upland"))  %>%
-    mutate(transect_location = stringr::str_replace(transect_location,"tr","Transition"))  %>% 
-    mutate(transect_location = stringr::str_replace(transect_location,"wt","Wetland"))  
+    mutate(transect_location = stringr::str_replace(transect_location,"up","upland"))  %>%
+    mutate(transect_location = stringr::str_replace(transect_location,"tr","transition"))  %>% 
+    mutate(transect_location = stringr::str_replace(transect_location,"wt","wetland"))  
 
 collection_metadata_soiltypes_a <- full_join(collection_metadata_soiltypes_raw_1, collection_metadata_soiltypes_raw_2, by=c("kit_id","transect_location"))
 
@@ -168,10 +169,10 @@ visual_clean = visual %>%
   mutate(kit_id = stringr::str_extract(Sample,"K[:digit:]{3}" ),
          transect_location = stringr::str_extract(Sample,"upland|transition|wetland|sediment" ),
          campaign = "EC1") %>%
-    mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
-    mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
-    mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland")) %>%
-    mutate(transect_location = stringr::str_replace(transect_location,"sediment","Sediment")) %>%
+    # mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
+    # mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
+    # mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland")) %>%
+    # mutate(transect_location = stringr::str_replace(transect_location,"sediment","Sediment")) %>%
   rename(sample_weight_g = `Sample weight (from tare) (g)`,
          plant_litter= `Plant litter`,
          visible_minerals = `Visible Minerals`) %>%
@@ -195,7 +196,7 @@ soils_data_all_wmeta1 <- full_join(soils_data_all_wmeta_a, collection_metadata_s
 #also we have a bunch of things that were theoretically not collected... 
 #and visual metrics where we have no other data...
 
-soils_data_all_wmeta_vis <- full_join(soils_data_all_wmeta, visual_clean, by=c("kit_id", "transect_location", "campaign"))
+soils_data_all_wmeta_vis <- full_join(soils_data_all_wmeta1, visual_clean, by=c("kit_id", "transect_location", "campaign"))
   
 # Save as rds
 saveRDS(soils_data_all, "./soils_data_merged.rds")
