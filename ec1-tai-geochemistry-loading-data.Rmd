@@ -175,8 +175,9 @@ visual_clean = visual %>%
     # mutate(transect_location = stringr::str_replace(transect_location,"sediment","Sediment")) %>%
   rename(sample_weight_g = `Sample weight (from tare) (g)`,
          plant_litter= `Plant litter`,
-         visible_minerals = `Visible Minerals`) %>%
- select(campaign, kit_id, transect_location, sample_weight_g, plant_litter, visible_minerals)
+         visible_minerals = `Visible Minerals`,
+         visible_iron_ox = `Presence of Iron Oxidation`) %>%
+ select(campaign, kit_id, transect_location, sample_weight_g, plant_litter, visible_minerals, visible_iron_ox)
 ```
                
 ##Merge and save
@@ -223,5 +224,56 @@ LOI_missing <- full_join(sample_mass, LOI_data, by= c("kit_id", "transect_locati
 LOI_missing1 <- LOI_missing %>% filter(is.na(loi_perc))
 
 write_csv(LOI_missing1, "./LOI_soils_withNAs.csv")
+
+```
+
+##Complete Data
+Getting together only the samples that have a complete dataset 
+```{r complete data, echo=FALSE}
+completeset = soils_data_all_wmeta_vis %>% filter(collected == TRUE) %>%
+    select(campaign, kit_id, transect_location, loi_perc, bulk_density_g_cm3, gwc_perc, tn_perc, tc_perc, specific_conductance_us_cm, ph, gwc_perc, region, percent_clay, percent_sand, plant_litter, visible_minerals, visible_iron_ox, sample_weight_g) %>% select(!ends_with("_flag")) %>% na.omit()
+
+saveRDS(completeset, "./soils_data_foralex.rds")
+```
+
+```{r code for alex, echo=FALSE}
+#get and load needed packages
+require(googlesheets4)
+library(googlesheets4)
+
+require(tidyverse)
+library(tidyverse)
+
+#Give access permissions. Put in your email address.
+#options(gargle_oautho_email= "allison.myers-pigg@pnnl.gov")
+
+Alex_OC = googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1wLfwNtOP7hw2B102C9ZmvJtLfuQtvpqM2KTTTiFDmy4/edit#gid=0", sheet = 1)
+
+#clean up dataset before merging. Needs the same column headers as the other dataframe for the column you are merging, and need consistent capitalization or not in the kit names. Also the OC values need to be averaged. 
+
+Alex_OC_clean = Alex_OC %>%
+  #this line fixes the column names to make them R friendly.
+  dplyr::rename(oc_perc_rep1 = `OC % Run 1`,
+                oc_per_rep2 = `OC % Run 2`,
+                carbon_type = `Carbon Type`,
+                mineral_type = `Mineral Type`) %>%
+  #this line extracts the kit_id, transect location and creates the campaign name from the kit name into its own column(s)
+    mutate(kit_id = stringr::str_extract(KIT_ID,"K[:digit:]{3}" ), #extract kit ID
+           KIT_ID = tolower(KIT_ID), #this gives a consistent case for the sample names in the original kit ID column. This goes afterwe extract the uppercase K from KIT_ID so we don't have to change it back later.
+           transect_location = stringr::str_extract(KIT_ID,"upland|transition|wetland|sediment" ), #extract transect location 
+           campaign = "EC1") %>% #make campaign name. 
+#remove columns we don't need anymore 
+  select(-KIT_ID) %>%
+  #get dataframe ready to take mean OC
+  pivot_longer(cols = c(oc_perc_rep1, oc_per_rep2),
+               names_to = 'repnumber') %>%
+  rename(oc_per = value) %>%
+  group_by(kit_id, transect_location, campaign, carbon_type, mineral_type) %>%
+  dplyr::summarise(mean_oc_per = mean(oc_per, na.rm = TRUE), sd_oc_per = sd(oc_per, na.rm=TRUE)) 
+
+
+#merge the two sheets. left_join will get you only the samples you have OC for: 
+
+Alex_all_data <- left_join(Alex_OC_clean, soils_data_all_wmeta_vis, by=c("kit_id", "transect_location", "campaign"))
 
 ```
