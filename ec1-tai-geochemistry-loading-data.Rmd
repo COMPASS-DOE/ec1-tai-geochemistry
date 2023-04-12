@@ -275,5 +275,5 @@ Alex_OC_clean = Alex_OC %>%
 #merge the two sheets. left_join will get you only the samples you have OC for: 
 
 Alex_all_data <- left_join(Alex_OC_clean, soils_data_all_wmeta_vis, by=c("kit_id", "transect_location", "campaign"))
-
+saveRDS(Alex_all_data, "./soils_data_foralex_oc.rds")
 ```
