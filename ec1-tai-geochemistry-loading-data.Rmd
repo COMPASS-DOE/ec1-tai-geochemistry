@@ -259,7 +259,7 @@ Alex_OC_clean = Alex_OC %>%
                 mineral_type = `Mineral Type`) %>%
   #this line extracts the kit_id, transect location and creates the campaign name from the kit name into its own column(s)
     mutate(kit_id = stringr::str_extract(KIT_ID,"K[:digit:]{3}" ), #extract kit ID
-           KIT_ID = tolower(KIT_ID), #this gives a consistent case for the sample names in the original kit ID column. This goes afterwe extract the uppercase K from KIT_ID so we don't have to change it back later.
+           KIT_ID = tolower(KIT_ID), #this gives a consistent case for the sample names in the original kit ID column. This goes after we extract the uppercase K from KIT_ID so we don't have to change it back later.
            transect_location = stringr::str_extract(KIT_ID,"upland|transition|wetland|sediment" ), #extract transect location 
            campaign = "EC1") %>% #make campaign name. 
 #remove columns we don't need anymore 
