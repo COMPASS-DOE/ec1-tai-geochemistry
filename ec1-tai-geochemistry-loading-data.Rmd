@@ -152,13 +152,26 @@ collection_metadata_soiltypes_raw_3 <-  Donnie_soils_type %>%
     mutate(transect_location = stringr::str_replace(transect_location,"tr","transition"))  %>% 
     mutate(transect_location = stringr::str_replace(transect_location,"wt","wetland"))  
 
+collection_metadata_soiltypes_raw_4 <-  Donnie_soils_type %>%
+   pivot_longer(cols = c(wetland_soil_type, transition_soil_type, upland_soil_type),
+               names_to = 'transect_location') %>% 
+  select(kit_id, transect_location, value) %>%
+  rename(soil_type = value) %>%
+  mutate(transect_location = stringr::str_replace(transect_location,"_soil_type", "")) 
+    # mutate(transect_location = stringr::str_replace(transect_location,"upland","Upland"))  %>%
+    # mutate(transect_location = stringr::str_replace(transect_location,"transition","Transition"))  %>% 
+    # mutate(transect_location = stringr::str_replace(transect_location,"wetland","Wetland"))  
+
 collection_metadata_soiltypes_a <- full_join(collection_metadata_soiltypes_raw_1, collection_metadata_soiltypes_raw_2, by=c("kit_id","transect_location"))
 
-collection_metadata_soiltypes <- full_join(collection_metadata_soiltypes_a, collection_metadata_soiltypes_raw_3, by=c("kit_id","transect_location"))
+collection_metadata_soiltypes_b <- full_join(collection_metadata_soiltypes_a, collection_metadata_soiltypes_raw_3, by=c("kit_id","transect_location"))
 
-collection_metadata_soiltypes <- collection_metadata_soiltypes %>%
- mutate(campaign= "EC1") %>%
- drop_na(-kit_id, -transect_location, -campaign) #need to drop rows where all 3 variables are NA
+collection_metadata_soiltypes_c <- full_join(collection_metadata_soiltypes_b, collection_metadata_soiltypes_raw_4, by=c("kit_id","transect_location"))
+
+collection_metadata_soiltypes <- collection_metadata_soiltypes_c %>%
+ mutate(campaign= "EC1") 
+#%>%
+# drop_na(-kit_id, -transect_location, -campaign) #need to drop rows where all 3 variables are NA
 
 ```
 
