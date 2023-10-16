@@ -1,0 +1,319 @@
+---
+title: "ESA 2023"
+author: "AMP"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+getwd()
+```
+
+## Loading datasets from the data package.
+Download from: https://data.ess-dive.lbl.gov/view/doi:10.15485/1960313
+For now, download and save in Repo 
+
+```{r loading data, include = FALSE}
+
+metadata_1 <- read_csv("./data/EC1 Package V1/ec1_metadata_v1/ec1_metadata_collectionlevel.csv") %>% select(kit_id, transect_location, latitude, longitude, elevation_m)
+
+metadata_2 <- read_csv("./data/EC1 Package V1/ec1_metadata_v1/ec1_metadata_kitlevel.csv") %>% 
+  mutate(sediment = ifelse(str_detect(samples_collected, "Sediment"), T, F),
+          wetland = ifelse(str_detect(samples_collected, "Wetland"), T, F),
+          transition = ifelse(str_detect(samples_collected, "Transition"), T, F),
+          upland = ifelse(str_detect(samples_collected, "Upland"), T, F),
+          water = ifelse(str_detect(samples_collected, "Water"), T, F)) %>%
+  pivot_longer(cols = c(sediment, wetland, transition, upland, water),
+               names_to = "transect_location", values_to = "collected") %>%
+  select(kit_id, site_name, region, transect_location, collected)
+
+soil_files <- list.files(path = "./data/EC1 Package V1/ec1_soil_v1/", pattern = "*\\.csv", full.names = TRUE) %>%
+  set_names() %>%
+  purrr::map(read_csv) %>%
+  reduce(full_join, by = c("campaign", "kit_id", "transect_location"))
+
+water_files <- list.files(path = "./data/EC1 Package V1/ec1_water_v1/", pattern = "*\\.csv", full.names = TRUE) %>%
+  set_names() %>%
+  purrr::map(read_csv) %>%
+  reduce(full_join, by = c("campaign", "kit_id", "transect_location"))
+
+metadata_combined <- full_join(metadata_1, metadata_2, by= c("kit_id", "transect_location"))
+
+soil_all_clean <- full_join(metadata_combined, soil_files, by= c("kit_id", "transect_location")) %>%
+  filter(collected == "TRUE") %>% na.omit()
+
+water_all_clean <- left_join(water_files, metadata_combined, by= c("kit_id", "transect_location")) %>%
+  filter(collected == "TRUE") %>% na.omit()
+```
+
+```{r map}
+require(pacman)
+p_load(tidyverse, sf, 
+       googledrive, 
+       ggsflabel,
+       ggthemes)
+
+  ## Set CRS
+  common_crs <- 4326
+  
+  ## Set map size and point size
+  point_size <- 2
+  map_width = 9
+  map_height = 6
+
+  # Set up map layers for plotting ------------------------------------------
+  
+  ## Set regional and CB (inset) bounding boxes
+  us_bbox <- c(xmin = -125, xmax = -60, ymin = 20, ymax = 50)
+  region_bbox <- c(xmin = -95, xmax = -70, ymin = 35, ymax = 48)
+  cb_bbox <- c(xmin = -77.8, xmax = -74.5, ymin = 36.8, ymax = 40.5)
+  
+  ## Make US states map cropped to GL/CB region
+  us <- read_sf( "/Users/myer056/GitHub/EXCHANGE/Reports_markdown/cb_2018_us_state_5m/cb_2018_us_state_5m.shp") %>% 
+    st_transform(., crs = common_crs) %>% 
+    st_crop(., y = us_bbox)
+  
+  region <- st_crop(us, y = region_bbox)
+  
+  ## Further crop states to CB region
+  cb_states <- st_crop(region, y = cb_bbox)
+  
+  
+  # make a dataset merging metadata with site lat-longs
+  df_map <- soil_all_clean %>% 
+    st_as_sf(., coords = c("longitude", "latitude"), crs = common_crs)
+  
+  ## Crop data  to CB region for inset plot
+  df_cb <- st_crop(df_map, y = cb_bbox)
+  
+  ## Make the base map with all sites
+  base_plot <- 
+    ggplot() + 
+    geom_sf(data = region) + 
+    #geom_sf(data = meta_map, size = point_size * 3, color = "white") +
+  geom_sf(data = df_map, size = 5, color = "white") + 
+  geom_sf(data =df_map, size = 3.8, aes(color = ph), alpha = 0.8) + 
+    geom_rect(aes(xmin = -77.8, xmax = -74.5, ymin = 36.8, ymax = 40.5), 
+              fill = NA, color = "black", lwd = 0.75) +
+    geom_segment(aes(x = -77.8, xend = -76, y = 40.5, yend = 42), 
+                 color = "black", lwd = 0.75) + 
+    geom_segment(aes(x = -74.5, xend = -71, y = 40.5, yend = 41.5), 
+                 color = "black", lwd = 0.75) + 
+    theme_map() + 
+    theme(legend.background = element_rect(fill = alpha("white", 0.0)), 
+          legend.key = element_rect(fill = "transparent"), 
+          legend.position = c(0.85, 0.1)) 
+    labs(x = "", y = "" )
+  
+  ## Make the inset map with just CB sites
+  inset_plot <- 
+    ggplot() + 
+    geom_sf(data = cb_states) + 
+    geom_sf(data = df_cb, 
+            color = "white", size = point_size * 2) + 
+    geom_sf(data = df_cb, 
+           aes(color = ph), 
+            size = point_size * 1.7) + 
+    theme_map() + 
+    theme(legend.background = element_rect(fill = alpha("white", 0.0)), 
+          legend.key = element_rect(fill = "transparent"), 
+          #legend.position = c(0.7, 0)
+          legend.position = "none") + 
+    #scale_color_viridis_c(limits = c(var_min, var_max)) + 
+    theme(panel.background = element_rect(fill = "white", colour = "black")) + 
+    labs(color = "")
+  
+  ## Combine into single figure
+  base_plot + 
+    annotation_custom(
+      ggplotGrob(inset_plot), 
+      xmin = -78, xmax = -70, ymin = 41, ymax = 48.8)
+ 
+
+
+```
+
+```{r multivariate stats, echo=FALSE}
+
+soils4multi = soil_all_clean %>% unite(uniqueid, c(campaign,kit_id,transect_location)) %>% 
+  dplyr::select(-region, -latitude, -longitude, -site_name, -collected, -elevation_m) %>%
+column_to_rownames(var="uniqueid")
+
+library(vegan)
+library(dplyr)
+library(ggplot2)
+library(ggfortify)
+library("wesanderson")
+library(corrplot)
+
+# soilspca = prcomp(soils4multi, retx = TRUE, center = TRUE, scale. = TRUE)
+# biplot(soilspca)
+
+soilsnmds = metaMDS(soils4multi, distance="bray", 
+          k = 3,
+          maxit = 999, 
+          trymax = 500,
+          wascores = TRUE)
+
+transpal = c("#056009","#8E7941","#021677")
+
+regionloc <- soil_all_clean %>% select(transect_location, region)
+
+env1 <- envfit(soilsnmds, regionloc, permu = 999)
+
+ordiplot (soilsnmds, display = 'si', type = 'n')
+points (soilsnmds, col = alpha(transpal, 0.5), pch = 19)
+ordiellipse(soilsnmds, groups=soil_all_clean$transect_location, col=c("#056009","#8E7941","#021677"))
+#plot(env1, p.max = 0.05, label=FALSE)
+
+
+```
+
+```{r}
+
+soils4multi_upland = soil_all_clean %>% filter(transect_location == "upland") %>% unite(uniqueid, c(campaign,kit_id,transect_location)) %>% 
+  dplyr::select(-region, -latitude, -longitude, -site_name, -collected, -elevation_m) %>%
+column_to_rownames(var="uniqueid")
+
+upland <- cor(soils4multi_upland) %>% 
+  corrplot(addCoef.col = 'black', col = COL2('BrBG'), tl.srt = 45, tl.col = 'black', 
+           type = 'lower') 
+
+soils4multi_transition = soil_all_clean %>% filter(transect_location == "transition") %>% unite(uniqueid, c(campaign,kit_id,transect_location)) %>% 
+  dplyr::select(-region, -latitude, -longitude, -site_name, -collected, -elevation_m) %>%
+column_to_rownames(var="uniqueid")
+
+transition <- cor(soils4multi_transition) %>% 
+  corrplot(addCoef.col = 'black', col = COL2('BrBG'), tl.srt = 45, tl.col = 'black', 
+           type = 'lower') 
+
+soils4multi_wetland = soil_all_clean %>% filter(transect_location == "wetland") %>% unite(uniqueid, c(campaign,kit_id,transect_location)) %>% 
+  dplyr::select(-region, -latitude, -longitude, -site_name, -collected, -elevation_m) %>%
+column_to_rownames(var="uniqueid")
+
+wetland <- cor(soils4multi_wetland) %>% 
+  corrplot(addCoef.col = 'black', col = COL2('BrBG'), tl.srt = 45, tl.col = 'black', 
+           type = 'lower') 
+```
+
+```{r boxplots}
+#, "water" = "#67B7C6"
+tai_palette <- c("upland" = "#508C67","transition" = "#73A93A","wetland" = "#7F4D18")
+tai_order <- c("upland", "transition", "wetland")
+
+#SPC 
+SPC <- soil_all_clean %>%
+  ggplot(aes(x= factor(transect_location, level = tai_order),
+             y= specific_conductance_us_cm, fill=factor(transect_location, level=tai_order), alpha = region))+
+   scale_alpha_discrete(range = c(0.5, 0.9))+
+  geom_boxplot(outlier.shape =  NA)+
+  geom_point(size = 2, shape = 21, position = position_jitterdodge())+
+theme_minimal() + scale_fill_manual(values = tai_palette)+
+  labs(x = "Landscape Position", y = "Specific Conductance (µS/cm)", fill = "Landscape Position", alpha = "Region")+
+    theme(legend.position = "none")
+
+#Carbon
+
+C <- soil_all_clean %>%
+  ggplot(aes(x= factor(transect_location, level = tai_order),
+             y= carbon_weight_perc, fill=factor(transect_location, level=tai_order), alpha = region))+
+   scale_alpha_discrete(range = c(0.5, 0.9))+
+  geom_boxplot(outlier.shape =  NA)+
+  geom_point(size = 2, shape = 21, position = position_jitterdodge())+
+theme_minimal() + scale_fill_manual(values = tai_palette)+
+  labs(x = "Landscape Position", y = "Total Carbon (%)", fill = "Landscape Position", alpha = "Region")+
+    theme(legend.position = "none")
+
+
+#Nitrogen 
+
+N <- soil_all_clean %>%
+  ggplot(aes(x= factor(transect_location, level = tai_order),
+             y= nitrogen_weight_perc, fill=factor(transect_location, level=tai_order), alpha = region))+
+   scale_alpha_discrete(range = c(0.5, 0.9))+
+  geom_boxplot(outlier.shape =  NA)+
+  geom_point(size = 2, shape = 21, position = position_jitterdodge())+
+theme_minimal() + scale_fill_manual(values = tai_palette)+
+  labs(x = "Landscape Position", y = "Total Nitrogen (%)", fill = "Landscape Position", alpha = "Region")
+
+
+boxplots <- cowplot::plot_grid(SPC, C, N, ncol=3, align = "v", rel_widths = c(3,3,5))
+
+
+cowplot::save_plot("./boxplots_soils.pdf", boxplots, ncol = 3, nrow = 1, base_aspect_ratio= 1:1, dpi=300)
+
+```
+
+```{r boxplots water}
+#, "water" = "#67B7C6"
+water_palette <- c("water" = "#67B7C6")
+#tai_order <- c("upland", "transition", "wetland")
+
+#SPC 
+Sal <- water_all_clean %>%
+  ggplot(aes(x= transect_location,
+             y= sal_psu, alpha = region, fill= transect_location))+
+   scale_alpha_discrete(range = c(0.5, 0.9))+
+  geom_boxplot(outlier.shape =  NA)+
+  geom_point(size = 2, shape = 21, position = position_jitterdodge())+
+theme_minimal() + scale_fill_manual(values =  water_palette)+
+  labs(x = "Landscape Position", y = "Salinity (PSU)", fill = "Landscape Position", alpha = "Region")+
+    theme(legend.position = "none")
+
+#Carbon
+
+DOC <-  water_all_clean %>%
+  ggplot(aes(x= transect_location,
+             y= doc_mgC_L, alpha = region, fill= transect_location))+
+   scale_alpha_discrete(range = c(0.5, 0.9))+
+  geom_boxplot(outlier.shape =  NA)+
+  geom_point(size = 2, shape = 21, position = position_jitterdodge())+
+theme_minimal() + scale_fill_manual(values =  water_palette)+
+  labs(x = "Landscape Position", y = "Dissolved Organic Carbon (mgC/L)", fill = "Landscape Position", alpha = "Region")+
+    theme(legend.position = "none")
+
+
+#Nitrogen 
+
+TDN <- Sal <- water_all_clean %>%
+  ggplot(aes(x= transect_location,
+             y= tdn_mgN_L, alpha = region, fill= transect_location))+
+   scale_alpha_discrete(range = c(0.5, 0.9))+
+  geom_boxplot(outlier.shape =  NA)+
+  geom_point(size = 2, shape = 21, position = position_jitterdodge())+
+theme_minimal() + scale_fill_manual(values =  water_palette)+
+  labs(x = "Landscape Position", y = "Total Dissolved Nitrogen (mgN/L)", fill = "Landscape Position", alpha = "Region")
+
+
+waterboxplots <- cowplot::plot_grid(Sal, DOC, TDN, ncol=3, align = "v", rel_widths = c(3,3,5))
+
+
+cowplot::save_plot("./boxplots_waters.pdf", waterboxplots, ncol = 3, nrow = 1, base_aspect_ratio= 1:1, dpi=300)
+
+```
+
+```{r stats}
+#soil Carbon
+qqnorm(log(soil_all_clean$carbon_weight_perc))
+shapiro.test(log(soil_all_clean$carbon_weight_perc)) # p-value > 0.05 implying that the distribution of the data are not significantly different from normal distribution. In other words, we can assume the normality.
+
+tc_anova = aov(log(carbon_weight_perc) ~ region * transect_location, data = soil_all_clean )
+summary.aov(tc_anova)
+
+Tukey_tc <-TukeyHSD(tc_anova, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_tc)
+
+#soil Nitrogen
+qqnorm(log(soil_all_clean$nitrogen_weight_perc))
+shapiro.test(log(soil_all_clean$nitrogen_weight_perc)) # p-value > 0.05 implying that the distribution of the data are not significantly different from normal distribution. In other words, we can assume the normality.
+
+tn_anova = aov(log(nitrogen_weight_perc) ~ region * transect_location, data = soil_all_clean )
+summary.aov(tn_anova)
+
+Tukey_tn <-TukeyHSD(tn_anova, conf.level = 0.95) #running ad-hoc Tukey test to see what is driving the difference
+print(Tukey_tn)
+
+```
+
